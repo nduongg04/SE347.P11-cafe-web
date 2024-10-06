@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 * {
-	@apply box-border;
+  @apply box-border;
 }
 
 svg {
@@ -17,12 +17,10 @@ svg {
 }
 
 @layer components {
-
 }
 
 @layer base {
   :root {
     --radius: 0.5rem;
   }
-	
 }
