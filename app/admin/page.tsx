@@ -1,8 +1,4 @@
-type AdminProps = {
-	prop1: string;
-	prop2: string;
+const Dashboard = () => {
+  return <div>Dashboard</div>;
 };
-
-export const Admin = ({ prop1, prop2 }: AdminProps) => {
-	return <div>Admin</div>;
-};
+export default Dashboard;
