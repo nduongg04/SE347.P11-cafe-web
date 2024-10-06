@@ -2,7 +2,7 @@ import NavBar from "@/components/admin/NavBar";
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 	return (
-		<div className="flex flex-row bg-red-500 size-96">
+		<div className="flex flex-row bg-[#F3F2F7]">
 			<NavBar />
 			{children}
 		</div>
