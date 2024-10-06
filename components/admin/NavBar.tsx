@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons } from "../Icons";
+import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 type IconNameType =
   | "dashboard"
@@ -15,6 +17,8 @@ type IconNameType =
   | "analytics";
 
 const NavBar = () => {
+  //   const [prevPath, setPrevPath] = useState("");
+  const pathname = usePathname();
   const routes: {
     label: string;
     href: string;
@@ -56,47 +60,63 @@ const NavBar = () => {
       icon: "analytics",
     },
   ];
-  const pathname = usePathname();
+
+  //   useEffect(() => {
+  //     setPrevPath(pathname);
+  //   }, [pathname]);
+
   const getIconComponent = (iconName: IconNameType, className?: string) => {
     const IconComponent = Icons[iconName as keyof typeof Icons];
     return IconComponent ? <IconComponent className={className} /> : null;
   };
 
   return (
-    <div className="flex h-screen w-1/6 flex-col gap-10 bg-white p-7">
-      <div className="flex flex-col gap-1">
-        <Image
-          src="/assets/icons/logo.svg"
-          alt="logo"
-          width={150}
-          height={150}
-        />
+    <div className="flex h-screen w-1/6 flex-col gap-10 bg-white">
+      <div className="flex flex-col gap-1 p-7">
+        <Link href="/admin">
+          <Image
+            src="/assets/icons/logo.svg"
+            alt="logo"
+            width={150}
+            height={150}
+          />
+        </Link>
         <p className="font-barlow text-xs font-medium text-light-gray">
           Modern Admin Dashboard
         </p>
       </div>
-      <div className="flex flex-col gap-7">
+      <div className="relative flex flex-col">
+        <div
+          className="absolute inset-0 flex justify-center gap-5 pr-7 transition-all duration-300"
+          style={{
+            transform: `translateY(${routes.findIndex((route) => route.href === pathname) * 100}%)`,
+            height: `${100 / routes.length}%`,
+          }}
+        >
+          <Image
+            src="/assets/icons/nav-highlight.svg"
+            alt="nav-highlight"
+            width={4}
+            height={4}
+            className={cn("")}
+          />
+          <div className="h-full w-full rounded-md bg-dark-green/15" />
+        </div>
+
         {routes.map((route) => (
           <Link
+            key={route.href}
             href={route.href}
-            key={route.label}
-            className="flex items-center gap-2 transition-colors"
-          >
-            {getIconComponent(
-              route.icon,
-              `${
-                pathname === route.href
-                  ? "text-dark-green"
-                  : "text-black-purple"
-              } transition-colors duration-300`,
+            className={cn(
+              "relative z-10 flex flex-1 items-center gap-2 px-8 py-3 transition-all duration-100",
+              {
+                "text-dark-green": pathname === route.href,
+                "text-black-purple": pathname !== route.href,
+              },
             )}
-            <span
-              className={`${
-                pathname === route.href
-                  ? "text-dark-green"
-                  : "text-black-purple"
-              } text-base font-medium transition-colors duration-300`}
-            >
+          >
+            {getIconComponent(route.icon, "transition-colors duration-300")}
+            <span className="text-base font-medium transition-colors duration-300">
               {route.label}
             </span>
           </Link>
@@ -105,4 +125,5 @@ const NavBar = () => {
     </div>
   );
 };
+
 export default NavBar;
