@@ -1,17 +1,16 @@
 import { Bill } from "./columns";
 
 export async function getData(): Promise<Bill[]> {
-    // Fetching data from the server
-    return [
-        {
-           id:  "1",
-            customerId: "1",
-            voucherId: "1",
-            staffId: "1",
-            payTypeId: "1",
-            status: "waiting",
-            totalPrice: 100,
-            createdAt: new Date("2021-09-01")
-        }
-    ];
+    const bills: Bill[] = Array.from({ length: 35 }, (_, i) => ({
+        id: `${i + 1}`,
+        customerId: `${i + 1}`,
+        voucherId: `${i + 1}`,
+        staffId: `${i + 1}`,
+        payTypeId: `${i + 1}`,
+        status: "waiting",
+        totalPrice: 10000 * (i + 1),
+        createdAt: new Date(`2021-09-${(i % 30) + 1}`)
+    }));
+    
+    return bills;
 }

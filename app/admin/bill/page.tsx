@@ -20,22 +20,10 @@ const bill = () => {
         fetchData();
     }, [])
     return (
-        <div>
+        <div className="mx-4">
             <h2 className="text-xl font-semibold">Bill Management</h2>
-            <div className="flex justify-end mr-4 mb-4">
-                <DateRangePicker
-                    startDate={startDate}
-                    endDate={endDate}
-                    setStartDate={setStartDate}
-                    setEndDate={setEndDate}
-                />
-                <Button variant="secondary" className="mx-4">Dowload all</Button>
-                <Button variant="destructive">Delete bill</Button>
-            </div>
             <div>
                 <DataTable columns={columns} data={data} />
-                <div>{startDate?.toDateString()}</div>
-                <div>{endDate?.toDateString()}</div>
             </div>
         </div>
     )
