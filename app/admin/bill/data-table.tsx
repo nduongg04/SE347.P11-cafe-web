@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
 import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  ColumnFiltersState,
-  getFilteredRowModel,
-  SortingState,
-  useReactTable,
-} from "@tanstack/react-table"
-import { DateRangePicker } from '@/components/custom/date-range-picker';
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+    ColumnDef,
+    flexRender,
+    getCoreRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    ColumnFiltersState,
+    getFilteredRowModel,
+    SortingState,
+    useReactTable,
+} from "@tanstack/react-table";
+import { DateRangePicker } from "@/components/custom/date-range-picker";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -39,13 +39,13 @@ import { set } from "date-fns";
 import { FilterFn } from "@tanstack/react-table";
 import { dateRangeFilter } from "./columns";
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+    columns: ColumnDef<TData, TValue>[];
+    data: TData[];
 }
 
 export function DataTable<TData, TValue>({
-  columns,
-  data,
+    columns,
+    data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
