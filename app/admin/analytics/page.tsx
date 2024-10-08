@@ -14,6 +14,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import Badge from "@/components/admin/Badge";
+import { PieChartComponent } from "@/components/admin/PieChartComponent";
 
 const Analytics = () => {
     const [selectedDate, setSelectedDate] = useState<DateRange | undefined>({
@@ -108,6 +109,9 @@ const Analytics = () => {
                         title={badgeInfo.title}
                     />
                 ))}
+            </div>
+            <div className="flex justify-center items-center">
+                <PieChartComponent />
             </div>
         </div>
     );
