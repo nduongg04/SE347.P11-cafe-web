@@ -9,8 +9,8 @@ export async function getData(): Promise<Bill[]> {
         payTypeId: `${i + 1}`,
         status: "waiting",
         totalPrice: 10000 * (i + 1),
-        createdAt: new Date(`2021-09-${(i % 30) + 1}`)
+        createdAt: new Date(`2021-09-${(i % 30) + 1}`),
     }));
-    
+
     return bills;
 }
