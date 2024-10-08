@@ -14,6 +14,7 @@ type IconNameType =
   | "customer"
   | "order"
   | "employee"
+  | "bill"
   | "analytics";
 
 const NavBar = () => {
@@ -53,6 +54,11 @@ const NavBar = () => {
       label: "Employee",
       href: "/admin/employee",
       icon: "employee",
+    },
+    {
+      label: "Bill",
+      href: "/admin/bill",
+      icon: "bill",
     },
     {
       label: "Analytics",
