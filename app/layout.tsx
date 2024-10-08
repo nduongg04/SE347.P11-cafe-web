@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     title: "Cafe",
     description: "Cafe",
     akjsdhflkjahdf
-      akjsdhflkjahdf
+    akjsdhflkjahdf
 };
 
 export default function RootLayout({
