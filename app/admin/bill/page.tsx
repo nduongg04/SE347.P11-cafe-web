@@ -19,7 +19,7 @@ const bill = () => {
         fetchData();
     }, []);
     return (
-        <div className="mx-4">
+        <div className="m-4">
             <h2 className="text-xl font-semibold">Bill Management</h2>
             <div>
                 <DataTable columns={columns} data={data} />

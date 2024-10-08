@@ -8,58 +8,64 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
 type IconNameType =
-    | "dashboard"
-    | "menu"
-    | "voucher"
-    | "customer"
-    | "order"
-    | "employee"
-    | "analytics";
+  | "dashboard"
+  | "menu"
+  | "voucher"
+  | "customer"
+  | "order"
+  | "employee"
+  | "bill"
+  | "analytics";
 
 const NavBar = () => {
-    //   const [prevPath, setPrevPath] = useState("");
-    const pathname = usePathname();
-    const routes: {
-        label: string;
-        href: string;
-        icon: IconNameType;
-    }[] = [
-        {
-            label: "Dashboard",
-            href: "/admin",
-            icon: "dashboard",
-        },
-        {
-            label: "Menu",
-            href: "/admin/menu",
-            icon: "menu",
-        },
-        {
-            label: "Voucher",
-            href: "/admin/voucher",
-            icon: "voucher",
-        },
-        {
-            label: "Customer",
-            href: "/admin/customer",
-            icon: "customer",
-        },
-        {
-            label: "Order",
-            href: "/admin/order",
-            icon: "order",
-        },
-        {
-            label: "Employee",
-            href: "/admin/employee",
-            icon: "employee",
-        },
-        {
-            label: "Analytics",
-            href: "/admin/analytics",
-            icon: "analytics",
-        },
-    ];
+  //   const [prevPath, setPrevPath] = useState("");
+  const pathname = usePathname();
+  const routes: {
+    label: string;
+    href: string;
+    icon: IconNameType;
+  }[] = [
+    {
+      label: "Dashboard",
+      href: "/admin",
+      icon: "dashboard",
+    },
+    {
+      label: "Menu",
+      href: "/admin/menu",
+      icon: "menu",
+    },
+    {
+      label: "Voucher",
+      href: "/admin/voucher",
+      icon: "voucher",
+    },
+    {
+      label: "Customer",
+      href: "/admin/customer",
+      icon: "customer",
+    },
+    {
+      label: "Order",
+      href: "/admin/order",
+      icon: "order",
+    },
+    {
+      label: "Employee",
+      href: "/admin/employee",
+      icon: "employee",
+    },
+    {
+      label: "Bill",
+      href: "/admin/bill",
+      icon: "bill",
+    },
+    {
+      label: "Analytics",
+      href: "/admin/analytics",
+      icon: "analytics",
+    },
+  ];
 
     //   useEffect(() => {
     //     setPrevPath(pathname);
