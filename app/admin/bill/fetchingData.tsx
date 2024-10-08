@@ -19,6 +19,6 @@ export async function getData(): Promise<Bill[]> {
             productPrice: 1000 * (j + 1),
         })),
     }));
-    
+
     return bills;
 }
