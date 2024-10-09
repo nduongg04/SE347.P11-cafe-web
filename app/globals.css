@@ -6,10 +6,6 @@
   @apply box-border;
 }
 
-svg {
-  @apply fill-dark-green !important;
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
