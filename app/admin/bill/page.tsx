@@ -7,7 +7,7 @@ import { DataTable } from "./data-table";
 import { getData } from "./fetchingData";
 import { DateRangePicker } from "@/components/custom/date-range-picker";
 
-const bill = () => {
+const BillPage = () => {
     const [data, setData] = React.useState<Bill[]>([]);
     const [startDate, setStartDate] = React.useState<Date | undefined>();
     const [endDate, setEndDate] = React.useState<Date | undefined>();
@@ -27,4 +27,4 @@ const bill = () => {
         </div>
     );
 };
-export default bill;
+export default BillPage;
