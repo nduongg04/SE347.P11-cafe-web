@@ -8,7 +8,7 @@ import { DataTableMemberShip } from "./data-table-membership";
 import { getCustomerData, getCustomerTypeData } from "./fetchingData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-const customer = () => {
+const CustomerPage = () => {
     const [data, setData] = React.useState<Customer[]>([]);
     const [customerType, setCustomerType] = React.useState<CustomerType[]>([]);
     React.useEffect(() => {
@@ -39,4 +39,4 @@ const customer = () => {
         </Tabs>
     );
 };
-export default customer;
+export default CustomerPage;
