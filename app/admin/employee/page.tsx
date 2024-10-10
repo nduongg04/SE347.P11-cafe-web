@@ -7,7 +7,7 @@ import { DataTable } from "./data-table";
 import { getData } from "./fetchingData";
 import { DateRangePicker } from "@/components/custom/date-range-picker";
 
-const employee = () => {
+const EmployeePage = () => {
     const [data, setData] = React.useState<Staff[]>([]);
     React.useEffect(() => {
         async function fetchData() {
@@ -25,4 +25,4 @@ const employee = () => {
         </div>
     );
 };
-export default employee;
+export default EmployeePage;
