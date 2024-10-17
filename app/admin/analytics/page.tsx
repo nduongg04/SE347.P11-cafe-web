@@ -15,6 +15,8 @@ import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import Badge from "@/components/admin/Badge";
 import { PieChartComponent } from "@/components/admin/PieChartComponent";
+import { AreaChartComponent } from "@/components/admin/AreaChartComponent";
+import { DishCard } from "@/components/admin/DishCard";
 
 const Analytics = () => {
     const [selectedDate, setSelectedDate] = useState<DateRange | undefined>({
@@ -41,7 +43,7 @@ const Analytics = () => {
     return (
         <div className="font-barlow flex flex-1 flex-col gap-10 p-5">
             <div className="flex items-center justify-between gap-10">
-                <div className="flex flex-1 items-center justify-between gap-10">
+                <div className="flex flex-1 flex-wrap items-center justify-between gap-10">
                     <div className="flex flex-col gap-1">
                         <h1 className="text-xl font-semibold">Analytics</h1>
                         <p className="text-sm text-gray-500">
@@ -51,7 +53,7 @@ const Analytics = () => {
                     </div>
                     <Popover>
                         <PopoverTrigger>
-                            <div className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 shadow-[0_4px_4px_0_rgba(0,0,0,0.04)]">
+                            <div className="shadow-black-medium flex items-center gap-2 rounded-lg bg-white px-4 py-2">
                                 <div className="h-full rounded-lg bg-[#2D9CDB]/15 p-1">
                                     <Image
                                         src="/assets/icons/calendar.svg"
@@ -100,7 +102,7 @@ const Analytics = () => {
                 <div className="h-10 w-px bg-bright-gray" />
                 <Profile />
             </div>
-            <div className="flex justify-between gap-20">
+            <div className="flex flex-wrap justify-between gap-20">
                 {badgeInfos.map((badgeInfo, index) => (
                     <Badge
                         key={index}
@@ -110,9 +112,23 @@ const Analytics = () => {
                     />
                 ))}
             </div>
-            <div className="flex justify-center items-center">
-                <PieChartComponent />
+            <div className="grid grid-flow-col grid-cols-3 gap-16">
+                <PieChartComponent
+                    from={
+                        selectedDate?.from ||
+                        new Date(new Date().setDate(new Date().getDate() - 7))
+                    }
+                    to={selectedDate?.to || new Date()}
+                />
+                <AreaChartComponent
+                    from={
+                        selectedDate?.from ||
+                        new Date(new Date().setDate(new Date().getDate() - 7))
+                    }
+                    to={selectedDate?.to || new Date()}
+                />
             </div>
+			<DishCard />
         </div>
     );
 };
