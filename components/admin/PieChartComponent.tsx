@@ -1,118 +1,97 @@
 "use client";
 
-import * as React from "react";
-import { TrendingUp } from "lucide-react";
-import { Label, Pie, PieChart } from "recharts";
+import { ChartConfig } from "@/components/ui/chart";
+import PieChartSub from "./PieChartSub";
+import ComponentHeader from "./ComponentHeader";
 
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import {
-    ChartConfig,
-    ChartContainer,
-    ChartTooltip,
-    ChartTooltipContent,
-} from "@/components/ui/chart";
+export type PieChartComponentProps = {
+    from: Date;
+    to: Date;
+};
 
-export const description = "A donut chart with text";
-
-const chartData = [
-    { time: "Remaining", revenue: 20, fill: "rgba(255 91 91 / 0.2)" },
-    { time: "This period", revenue: 80, fill: "#FF5B5B" },
-];
-
-const chartConfig = {
-    revenue: {
-        label: "Revenue",
-    },
-    remaining: {
-        label: "Remaining",
-        color: "rgba(255 91 91 / 0.2)",
-    },
-    thisPeriod: {
-        label: "This period",
-        color: "#FF5B5B",
-    },
-} satisfies ChartConfig;
-
-export function PieChartComponent() {
-    const thisPeriodRevenue = chartData[1].revenue;
-
+export function PieChartComponent({ from, to }: PieChartComponentProps) {
+    const chartInfos: {
+        chartData: { [key: string]: number | string }[];
+        chartConfig: ChartConfig;
+        footer: string;
+        labelText: number;
+        dataKey: string;
+        nameKey: string;
+    }[] = [
+        {
+            chartData: [
+                { time: "This period", revenue: 80, fill: "#FF5B5B" },
+                {
+                    time: "Remaining",
+                    revenue: 20,
+                    fill: "rgba(255 91 91 / 0.2)",
+                },
+            ],
+            chartConfig: {
+                revenue: {
+                    label: "Revenue",
+                },
+                remaining: {
+                    label: "Remaining",
+                    color: "rgba(255 91 91 / 0.2)",
+                },
+                thisPeriod: {
+                    label: "This period",
+                    color: "#FF5B5B",
+                },
+            },
+            labelText: 80,
+            footer: "Revenue",
+            dataKey: "revenue",
+            nameKey: "time",
+        },
+        {
+            chartData: [
+                { time: "This period", orders: 19, fill: "#2D9CDB" },
+                {
+                    time: "Remaining",
+                    orders: 81,
+                    fill: "rgb(45 156 219 / 0.2)",
+                },
+            ],
+            chartConfig: {
+                orders: {
+                    label: "Orders",
+                },
+                remaining: {
+                    label: "Remaining",
+                    color: "rgb(45 156 219 / 0.2)",
+                },
+                thisPeriod: {
+                    label: "This period",
+                    color: "#2D9CDB",
+                },
+            },
+            labelText: 19,
+            footer: "Orders",
+            dataKey: "orders",
+            nameKey: "time",
+        },
+    ];
     return (
-        <div className="flex justify-between gap-4 bg-white">
-			<h1>Pie Chart</h1>
-            <Card className="flex flex-col border-0 fill-black-purple text-black-purple shadow-none"> 
-                <CardContent className="flex max-h-[250px] min-h-[150px] flex-1 gap-4 pb-0">
-                    <ChartContainer
-                        config={chartConfig}
-                        className="mx-auto aspect-square zoom-in-50 flex"
-                    >
-                        <PieChart>
-                            <ChartTooltip
-                                cursor={false}
-                                content={
-                                    <ChartTooltipContent
-                                        hideLabel
-                                        isPercentage
-                                    />
-                                }
-                            />
-                            <Pie
-                                data={chartData}
-                                dataKey="revenue"
-                                nameKey="time"
-                                innerRadius={30}
-                                strokeWidth={5}
-                            >
-                                <Label
-                                    content={({ viewBox }) => {
-                                        if (
-                                            viewBox &&
-                                            "cx" in viewBox &&
-                                            "cy" in viewBox
-                                        ) {
-                                            return (
-                                                <text
-                                                    x={viewBox.cx}
-                                                    y={viewBox.cy}
-                                                    textAnchor="middle"
-                                                    dominantBaseline="middle"
-                                                >
-                                                    <tspan
-                                                        x={viewBox.cx}
-                                                        y={viewBox.cy}
-                                                        className="fill-black-purple text-xl font-bold"
-                                                    >
-                                                        {`${thisPeriodRevenue.toLocaleString()}%`}
-                                                    </tspan>
-                                                    <tspan
-                                                        x={viewBox.cx}
-                                                        y={
-                                                            (viewBox.cy || 0) +
-                                                            24
-                                                        }
-                                                        className="fill-muted-foreground"
-                                                    ></tspan>
-                                                </text>
-                                            );
-                                        }
-                                    }}
-                                />
-                            </Pie>
-                        </PieChart>
-                    </ChartContainer>
-                </CardContent>
-                <CardFooter className="flex-col gap-2 text-sm">
-                    <div className="gap-2 font-medium leading-none">
-                        Total Revenue
-                    </div>
-                </CardFooter>
-            </Card>
+        <div className="shadow-black-medium flex flex-col justify-between gap-2 rounded-lg bg-white p-4">
+            <ComponentHeader
+                title="Pie Chart"
+                description="See total revenue and orders for the this period"
+            />
+            <div className="flex">
+                {chartInfos.map((chartInfo, index) => (
+                    <PieChartSub
+                        key={index}
+                        labelText={`${chartInfo.labelText.toLocaleString()}%`}
+                        footer={chartInfo.footer}
+                        chartData={chartInfo.chartData}
+                        chartConfig={chartInfo.chartConfig}
+                        dataKey={chartInfo.dataKey}
+                        nameKey={chartInfo.nameKey}
+                    />
+                ))}
+            </div>
         </div>
     );
 }
