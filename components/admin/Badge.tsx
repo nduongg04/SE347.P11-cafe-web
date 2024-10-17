@@ -8,7 +8,7 @@ type BadgeProps = {
 
 const Badge = ({ iconHref, value, title }: BadgeProps) => {
     return (
-        <div className="flex flex-1 items-center justify-center gap-4 rounded-md bg-white px-9 py-5 text-black-purple shadow-[0_4px_4px_0_rgba(0,0,0,0.04)]">
+        <div className="flex flex-1 items-center justify-center gap-4 rounded-md bg-white px-9 py-5 text-black-purple shadow-black-medium">
             <div className="flex aspect-square items-center justify-center rounded-full bg-dark-green/15 p-2">
                 <Image
                     src={iconHref}

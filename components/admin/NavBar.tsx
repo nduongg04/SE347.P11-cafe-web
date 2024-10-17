@@ -67,17 +67,13 @@ const NavBar = () => {
     },
   ];
 
-    //   useEffect(() => {
-    //     setPrevPath(pathname);
-    //   }, [pathname]);
-
     const getIconComponent = (iconName: IconNameType, className?: string) => {
         const IconComponent = Icons[iconName as keyof typeof Icons];
         return IconComponent ? <IconComponent className={className} /> : null;
     };
 
     return (
-        <div className="flex h-screen w-1/6 flex-col gap-10 bg-white">
+        <div className="flex min-h-full w-1/6 flex-col gap-10 bg-white">
             <div className="flex flex-col gap-1 p-7">
                 <Link href="/admin">
                     <Image
