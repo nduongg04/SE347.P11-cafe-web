@@ -1,16 +1,43 @@
 "use client";
 
-import { useRef } from "react";
+import { navigate, setCookies } from "@/lib/action";
+import { cn } from "@/lib/utils";
+import { useRef, useState } from "react";
+import ReactLoading from "react-loading";
+export type User = {
+    staffId: string;
+    staffName: string;
+    isAdmin: boolean;
+    username: string;
+};
+
+type ResponseLogin = {
+    data: User;
+    accessToken: string;
+    refreshToken: string;
+};
 
 const LoginPage = () => {
     const usernameInpput = useRef<HTMLInputElement>(null);
     const passwordInput = useRef<HTMLInputElement>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isIncorrect, setIsIncorrect] = useState(false);
     const baseURL = process.env.BASE_URL;
     async function onClick() {
+        if (isLoading) {
+            return;
+        }
+        if (!usernameInpput.current?.value || !passwordInput.current?.value) {
+            {
+                setIsIncorrect(true);
+                return;
+            }
+        }
         var data = {
             username: usernameInpput.current?.value,
             password: passwordInput.current?.value,
         };
+        setIsLoading(true);
         var response = await fetch(`${baseURL}/auth/login`, {
             method: "POST",
             headers: {
@@ -18,11 +45,20 @@ const LoginPage = () => {
             },
             body: JSON.stringify(data),
         });
+        if (!response.ok) {
+            setIsIncorrect(true);
+            setIsLoading(false);
+            return;
+        }
+        const res: ResponseLogin = await response.json();
 
-        const res = await response.json();
         console.log(res);
+        setCookies("user", JSON.stringify(res.data));
+        setCookies("accessToken", res.accessToken);
+        setCookies("refreshToken", res.accessToken);
+        setIsLoading(true);
+        navigate("/");
     }
-
     return (
         <div className="flex h-screen items-center justify-center gap-8">
             <img
@@ -37,21 +73,45 @@ const LoginPage = () => {
                 <hr className="" />
                 <input
                     ref={usernameInpput}
+                    required
                     className="rounded-xl border border-[#D1D5DB] p-3 text-[16px] caret-[#318BEE] focus:outline-[#318BEE]"
                     placeholder="Username"
                 />
                 <input
                     ref={passwordInput}
+                    required
                     type="password"
                     className="rounded-xl border border-[#D1D5DB] p-3 text-[16px] caret-[#318BEE] focus:outline-[#318BEE]"
                     placeholder="Password"
                 />
                 <button
-                    className="cursor-pointer rounded-xl bg-[#3371FF] p-3 text-[16px] text-white"
+                    className={cn(
+                        "flex h-[50px] justify-center rounded-xl p-3 text-[16px] text-white",
+                        isLoading
+                            ? "cursor-default bg-gray-500"
+                            : "cursor-pointer bg-[#3371FF]",
+                    )}
+                    type="submit"
                     onClick={onClick}
                 >
-                    Sign in
+                    {isLoading ? (
+                        <ReactLoading
+                            type="spin"
+                            width={"25px"}
+                            height={"25px"}
+                        />
+                    ) : (
+                        "Sign in"
+                    )}
                 </button>
+                <p
+                    className={cn(
+                        "flex self-center text-[12px] font-light text-red-600",
+                        isIncorrect ? "block" : "hidden",
+                    )}
+                >
+                    Your password or username is incorrect
+                </p>
             </div>
         </div>
     );
