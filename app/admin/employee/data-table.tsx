@@ -1,4 +1,5 @@
 "use client";
+import {url, token} from '@/constants';
 import {
   Dialog,
   DialogContent,
@@ -7,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose
 } from "@/components/ui/dialog"
 
 import {
@@ -43,18 +45,34 @@ import {
 } from "@/components/ui/alert-dialog"
 import { TriangleAlert } from "lucide-react"
 import * as React from "react"
-interface DataTableProps<TData, TValue> {
+import { toast } from 'sonner';
+interface StaffData {
+  staffId: string;
+  staffName: string
+  username: string
+  isAdmin: boolean
+}
+
+interface DataTableProps<TData extends StaffData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    onAdd: (data: TData) => void;
+    onDelete: (data: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
-}: DataTableProps<TData, TValue>) {
+    onAdd,
+    onDelete
+}: DataTableProps<StaffData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = React.useState({})
+  const [isAdmin, setIsAdmin] = React.useState<boolean>(true);
+  const [staffName, setStaffName] = React.useState<string>('');
+  const [username, setUsername] = React.useState<string>('');
+  const [password, setPassword] = React.useState<string>('');
   // Custom filter function for date range
   
 
@@ -75,6 +93,73 @@ export function DataTable<TData, TValue>({
     }
   });
   
+  const addStaff = async () => {
+    if(staffName==='' || username==='' || password===''){
+      toast.error('Please fill in all fields');
+      return;
+    }
+    if(staffName.length<10){
+      toast.error('Full name must be at least 10 characters');
+      return;
+    }
+    if(username.length<10){
+      toast.error('Account must be at least 10 characters');
+      return;
+    }
+    if(password.length<5){
+      toast.error('Password must be at least 5 characters');
+      return;
+    }
+    const response = await fetch(`${url}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ staffName, username, password, isAdmin })
+    });
+    if (!response.ok) {
+      toast.error('Failed to add staff');
+      return;
+    }
+    const result = await response.json();
+    toast.success('Staff added successfully');
+    setIsAdmin(true);
+    setStaffName('');
+    setUsername('');
+    setPassword('');
+    onAdd(result.data);
+  }
+  const deleteStaff = async () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    if (selectedRows.length === 0) {
+      toast.error('No staff selected');
+      return;
+    }
+    selectedRows.values;
+    const staffs = selectedRows.map((row) => {
+      return row.original;
+    
+    });
+    try{
+      await Promise.all(staffs.map(async (staff) => {
+        const response = await fetch(`${url}/staff/delete/${staff.staffId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+        }});
+        if (!response.ok) {
+          throw new Error('Failed to delete staff: '+ staff.staffId);
+        }
+        table.setRowSelection({}); 
+        toast.success('Staff deleted successfully');
+        onDelete(staff);
+      }))       
+    }
+    catch(err){
+      toast.error('Failed to delete staff: '+ err);
+    }
+  }
   return (
     <div>
       <div className="flex items-center justify-between py-4">
@@ -102,7 +187,7 @@ export function DataTable<TData, TValue>({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction className="bg-green-600 hover:bg-green-500">
+                <AlertDialogAction className="bg-green-600 hover:bg-green-500" onClick={deleteStaff}>
                   Continue
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -110,7 +195,10 @@ export function DataTable<TData, TValue>({
           </AlertDialog>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="green" className="mx-4">Add staff</Button>
+              <Button 
+                variant="green" 
+                className="mx-4"
+                >Add staff</Button>
             </DialogTrigger>
             <DialogContent >
               <DialogHeader>
@@ -124,28 +212,46 @@ export function DataTable<TData, TValue>({
                   <tr>
                     <td >Role</td>
                     <td >
-                      <select className="border rounded-md p-1">
-                        <option value="Admin">Admin</option>
-                        <option value="Staff">Staff</option>
+                      <select 
+                        className="border rounded-md p-1" 
+                        onChange={(e)=>setIsAdmin(e.target.value==="true")}>
+                        <option value="true">Admin</option>
+                        <option value="false">Staff</option>
                       </select>
                     </td>
                   </tr>
                   <tr >
                     <td >Full name</td>
-                    <td ><Input placeholder="Full name" /></td>
+                    <td ><Input 
+                          placeholder="Full name" 
+                          value={staffName} 
+                          onChange={(e)=> setStaffName(e.target.value)}
+                          required/></td>
                   </tr>
                   <tr >
                     <td >Account</td>
-                    <td ><Input placeholder="Username" /></td>
+                    <td ><Input 
+                            placeholder="Username" 
+                            value={username} 
+                            onChange={(e)=> setUsername(e.target.value)}
+                            required/></td>
                   </tr>
                   <tr>
                     <td >Password</td>
-                    <td ><Input type="password" placeholder="Password" /></td>
+                    <td >
+                      <Input 
+                        type="password" 
+                        placeholder="Password" 
+                        onChange={(e)=> setPassword(e.target.value)} 
+                        required/>
+                    </td>
                   </tr>
                 </table>            
               </div>
               <DialogFooter>
-                <Button type="submit" className="bg-green-600 hover:bg-green-500">Save changes</Button>
+                <DialogClose asChild>
+                  <Button type="submit" className="bg-green-600 hover:bg-green-500" onClick={addStaff}>Add</Button>
+                </DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>          

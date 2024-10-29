@@ -22,22 +22,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { TriangleAlert } from "lucide-react"
+
 import * as React from "react"
-import { set } from "date-fns";
-import { FilterFn } from "@tanstack/react-table";
 import { dateRangeFilter } from "./columns";
+import { toast } from "sonner"
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
@@ -46,13 +34,16 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
     columns,
     data,
+
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = React.useState({})
   const [startDate, setStartDate] = React.useState<Date | undefined>(new Date('2024-01-01'))
   const [endDate, setEndDate] = React.useState<Date | undefined>(new Date())
-
+  const [columnVisibility, setColumnVisibility] = React.useState({
+    createdAt: false,
+  });
   
   // Custom filter function for date range
   
@@ -71,6 +62,7 @@ export function DataTable<TData, TValue>({
       sorting,
       columnFilters,
       rowSelection,
+      columnVisibility
     },
     filterFns: {
       dateRangeFilter,
@@ -94,7 +86,9 @@ export function DataTable<TData, TValue>({
           placeholder="Search by id"
           value={(table.getColumn("id")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
+          {
             table.getColumn("id")?.setFilterValue(event.target.value)
+          }
           }
           className="max-w-sm bg-white rounded-md"
         />
@@ -107,25 +101,7 @@ export function DataTable<TData, TValue>({
           />
           <Button variant="secondary" className="mx-4">
             Download all
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">Delete bill</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader className="flex flex-col items-center">
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <TriangleAlert className="text-[#ff0000] size-20" />
-                Are you sure you want to delete the selected bill?
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction className="bg-green-600 hover:bg-green-500">
-                  Continue
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          </Button>        
         </div>
       </div>
 
@@ -167,7 +143,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  No results found
                 </TableCell>
               </TableRow>
             )}
@@ -177,8 +153,7 @@ export function DataTable<TData, TValue>({
 
       <div className="flex">
         <div className="flex-1 text-sm text-muted-foreground mt-2">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
           <Button
