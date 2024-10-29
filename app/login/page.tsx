@@ -55,7 +55,7 @@ const LoginPage = () => {
         console.log(res);
         setCookies("user", JSON.stringify(res.data));
         setCookies("accessToken", res.accessToken);
-        setCookies("refreshToken", res.accessToken);
+        setCookies("refreshToken", res.refreshToken);
         setIsLoading(true);
         navigate("/");
     }

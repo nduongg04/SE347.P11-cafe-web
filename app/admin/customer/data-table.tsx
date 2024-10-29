@@ -1,7 +1,8 @@
 "use client";
 import {toast} from "sonner";
 import { Customer } from "./columns";
-import {url, token} from "@/constants";
+import {url} from "@/constants";
+import { getCookies } from "@/lib/action";
 import {
   Dialog,
   DialogContent,
@@ -92,38 +93,42 @@ export function DataTable<TData, TValue>({
       toast.error('Invalid email address');
       return;
     }
-
-    const response = await fetch(`${url}/customer/create`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const cookies = await getCookies('refreshToken');
+    const token = cookies?.value;
+    try{
+      const response = await fetch(`${url}/customer/create`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerName: customerName,
+          phoneNumber: phoneNumber,
+          email: email,
+          revenue: 0,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message);
+      } else {
+        toast.success("Customer added successfully");
+      }
+      setCustomerName("");
+      setPhoneNumber("");
+      setEmail("");
+      onAdd?.({
+        email: email,
+        customerId: data.data.customerID,
         customerName: customerName,
         phoneNumber: phoneNumber,
-        email: email,
         revenue: 0,
-      }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      toast.error("Failed to add customer: " + data.message);
-      return;
-    } else {
-      toast.success("Customer added successfully");
+        customerType: "Visting customer",
+      });
+    }catch(e){
+      toast.error("Failed to add customer: " + e);
     }
-    setCustomerName("");
-    setPhoneNumber("");
-    setEmail("");
-    onAdd?.({
-      email: email,
-      customerId: data.data.customerID,
-      customerName: customerName,
-      phoneNumber: phoneNumber,
-      revenue: 0,
-      customerType: "Visting customer",
-    });
 
   };
   const handleDelete = async () => {
@@ -132,6 +137,8 @@ export function DataTable<TData, TValue>({
      toast.error("No rows selected");
      return;
    }
+   const cookies = await getCookies('refreshToken');
+  const token = cookies?.value;
    const customers = selectedRows.map((row) => row.original);
    try{
     await Promise.all(customers.map(async (customer) => {
