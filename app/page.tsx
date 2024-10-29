@@ -9,6 +9,7 @@ const Home = () => {
         const handleCookie = async () => {
             const userCookie = await getCookies("user");
             const userString = userCookie?.value;
+            console.log(userString);
             if (userString) {
                 const user: User = JSON.parse(userString);
                 if (user.isAdmin) {
