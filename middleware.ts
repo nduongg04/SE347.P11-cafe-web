@@ -13,7 +13,7 @@ export async function middleware(req: NextRequest) {
         const url = new URL("/login", req.nextUrl.origin);
         return Response.redirect(url);
     }
-    const response = await fetch(`${baseURL}/auth/refresh-token`, {
+    const response = await fetch(`${baseURL}/auth/check-token`, {
         method: "GET",
         headers: {
             Authorization: `Bearer ${refreshToken.value}`,
