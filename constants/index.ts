@@ -4,3 +4,5 @@ export const staff = {
     isAdmin: true,
     avatar: "https://github.com/shadcn.png",
 };
+export const url = "https://coffeemanagementapi.azurewebsites.net/api/v1";
+export const token = "";
