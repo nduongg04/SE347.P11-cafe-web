@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getCookies } from '@/lib/action';
 import {
     Dialog,
     DialogContent,
@@ -23,7 +24,7 @@ import {
   } from "@/components/ui/table"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Button } from "@/components/ui/button"
-import { url, token } from '@/constants';
+import { url} from '@/constants';
 import { Bill } from './columns';
 const BillDialog = ({bill, onUpdate} : {bill:Bill, onUpdate: (status: "Pending"|"Successful")=>void}) => {
   const [initialStatus] = useState(bill.status);
@@ -32,6 +33,7 @@ const BillDialog = ({bill, onUpdate} : {bill:Bill, onUpdate: (status: "Pending"|
   const handleSave = async () => {
     if (initialStatus !== currentStatus) {
       try {
+        const token = await getCookies('refreshToken');
         const response = await fetch(`${url}/bill/updatestatus/${bill.id}`, {
           method: 'PUT',
           headers: {

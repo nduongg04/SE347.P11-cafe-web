@@ -1,5 +1,6 @@
 "use client";
-import {url, token} from '@/constants';
+import {url} from '@/constants';
+import { getCookies } from '@/lib/action';
 import {
   Dialog,
   DialogContent,
@@ -110,6 +111,8 @@ export function DataTable<TData, TValue>({
       toast.error('Password must be at least 5 characters');
       return;
     }
+    const cookies = await getCookies('refreshToken');
+    const token = cookies?.value;
     const response = await fetch(`${url}/auth/register`, {
       method: 'POST',
       headers: {
@@ -141,6 +144,8 @@ export function DataTable<TData, TValue>({
       return row.original;
     
     });
+    const cookies = await getCookies('refreshToken');
+    const token = cookies?.value;
     try{
       await Promise.all(staffs.map(async (staff) => {
         const response = await fetch(`${url}/staff/delete/${staff.staffId}`, {
