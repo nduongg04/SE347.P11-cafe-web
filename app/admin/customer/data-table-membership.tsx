@@ -1,7 +1,7 @@
 "use client";
-
+import { getCookies} from "@/lib/action";
 import {toast} from "sonner";
-import {url, token} from "@/constants";
+import {url} from "@/constants";
 import {
   Dialog,
   DialogContent,
@@ -76,27 +76,33 @@ export function DataTableMemberShip<TData, TValue>({
       toast.error("Discount value must be between 0 and 100");
       return;
     }
-    const response = await fetch(`${url}/customertype/create`, {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({customerTypeName, discountValue, boundaryRevenue})
-    });
-    const data = await response.json();
-      console.log(data);
-    if (!response.ok) {
-      toast.error("Failed to add new customer type: " + data+ " "+response.status);
+    const cookies = await getCookies('refreshToken');
+    const token = cookies?.value;
+    try{
+      const response = await fetch(`${url}/customertype/create`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({customerTypeName, discountValue, boundaryRevenue})
+      });
+      const data = await response.json();
+        console.log(data);
+      if (!response.ok) {
+        throw new Error( data.message);
+      }
+      onAdd?.({
+        customerTypeId: data.data.customerTypeID,
+        customerTypeName: customerTypeName,
+        discountValue: discountValue,
+        boundaryRevenue: boundaryRevenue,
+      });
+      toast.success("Successfully added new membership");
+    }catch(e){
+      toast.error("Failed to add new customer type: " + e);
       return;
     }
-    onAdd?.({
-      customerTypeId: data.data.customerTypeID,
-      customerTypeName: customerTypeName,
-      discountValue: discountValue,
-      boundaryRevenue: boundaryRevenue,
-    });
-    toast.success("Successfully added new membership");
   }
   const handleDelete = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
@@ -106,6 +112,8 @@ export function DataTableMemberShip<TData, TValue>({
     }
     const customerType = selectedRows.map((row) => row.original);
     try{
+      const cookies = await getCookies('refreshToken');
+      const token = cookies?.value;
       await Promise.all(
         customerType.map(async (customerType) => {
           const response = await fetch(`${url}/customertype/delete/${customerType.customerTypeId}`, {
