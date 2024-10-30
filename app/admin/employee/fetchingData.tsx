@@ -1,10 +1,10 @@
 import { Staff } from "./columns";
 import { toast } from "sonner";
-import { url} from '@/constants';
 import { getCookies } from "@/lib/action";
 export async function getData(): Promise<Staff[]> {
     const cookies = await getCookies('refreshToken');
     const token = cookies?.value;
+    const url = process.env.BASE_URL;
     try{
         const response = await fetch(`${url}/staff/getall`, {
             method: 'GET',
