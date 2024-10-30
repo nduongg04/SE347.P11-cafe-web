@@ -1,7 +1,6 @@
 "use client";
 import { getCookies} from "@/lib/action";
 import {toast} from "sonner";
-import {url} from "@/constants";
 import {
   Dialog,
   DialogContent,
@@ -78,6 +77,7 @@ export function DataTableMemberShip<TData, TValue>({
     }
     const cookies = await getCookies('refreshToken');
     const token = cookies?.value;
+    const url = process.env.BASE_URL;
     try{
       const response = await fetch(`${url}/customertype/create`, {
         method: "POST",
@@ -114,6 +114,7 @@ export function DataTableMemberShip<TData, TValue>({
     try{
       const cookies = await getCookies('refreshToken');
       const token = cookies?.value;
+      const url = process.env.BASE_URL;
       await Promise.all(
         customerType.map(async (customerType) => {
           const response = await fetch(`${url}/customertype/delete/${customerType.customerTypeId}`, {

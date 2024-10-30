@@ -1,6 +1,5 @@
 "use client";
 import * as React from "react";
-import {url} from '@/constants';
 import { getCookies } from "@/lib/action";
 import {toast} from "sonner";
 import { ColumnDef } from "@tanstack/react-table"
@@ -107,6 +106,7 @@ export const columns:(
           try{
             const cookies = await getCookies('refreshToken');
             const token = cookies?.value;
+            const url = process.env.BASE_URL;
             const response = await fetch(`${url}/customer/update/${customer.customerId}`, {
               method: "PUT",
               headers: {
@@ -282,6 +282,7 @@ export const customerTypeColumns: (
         try{
           const cookies = await getCookies('refreshToken');
           const token = cookies?.value;
+          const url = process.env.BASE_URL;
           const response = await fetch(`${url}/customertype/update/${row.original.customerTypeId}`, {
             method: "PUT",
             headers: {
