@@ -24,13 +24,13 @@ import {
   } from "@/components/ui/table"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Button } from "@/components/ui/button"
-import { url} from '@/constants';
 import { Bill } from './columns';
 const BillDialog = ({bill, onUpdate} : {bill:Bill, onUpdate: (status: "Pending"|"Successful")=>void}) => {
   const [initialStatus] = useState(bill.status);
   const [currentStatus, setCurrentStatus] = useState<"Pending"|"Successful">(bill.status);
 
   const handleSave = async () => {
+    const url = process.env.BASE_URL;
     if (initialStatus !== currentStatus) {
       try {
         const token = await getCookies('refreshToken');

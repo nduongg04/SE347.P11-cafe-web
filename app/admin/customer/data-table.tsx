@@ -1,7 +1,6 @@
 "use client";
 import {toast} from "sonner";
 import { Customer } from "./columns";
-import {url} from "@/constants";
 import { getCookies } from "@/lib/action";
 import {
   Dialog,
@@ -95,6 +94,7 @@ export function DataTable<TData, TValue>({
     }
     const cookies = await getCookies('refreshToken');
     const token = cookies?.value;
+    const url = process.env.BASE_URL;
     try{
       const response = await fetch(`${url}/customer/create`, {
         method: "POST",
@@ -140,6 +140,7 @@ export function DataTable<TData, TValue>({
    const cookies = await getCookies('refreshToken');
   const token = cookies?.value;
    const customers = selectedRows.map((row) => row.original);
+   const url = process.env.BASE_URL;
    try{
     await Promise.all(customers.map(async (customer) => {
       const response = await fetch(`${url}/customer/delete/${customer.customerId}`, {
