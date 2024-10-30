@@ -1,5 +1,4 @@
 import { Bill, BillInfo } from "./columns";
-import {url} from "@/constants";
 import { getCookies } from "@/lib/action";
 import { toast } from "sonner";
 export async function getData(): Promise<Bill[]> {
@@ -21,6 +20,7 @@ export async function getData(): Promise<Bill[]> {
     //         productPrice: 1000 * (j + 1),
     //     })),
     // }));
+    const url = process.env.BASE_URL;
     const cookies = await getCookies('refreshToken');
     const refreshToken = cookies?.value;
     try{
