@@ -1,11 +1,11 @@
 import { toast } from "sonner";
 import { Customer, CustomerType } from "./columns";
 import { getCookies } from "@/lib/action";
-import { url} from "@/constants";
 
 export async function getCustomerData(): Promise<Customer[]> {
     const cookies = await getCookies("refreshToken");
     const token = cookies?.value;
+    const url = process.env.BASE_URL;
     try{
         const response = await fetch(`${url}/customer/getall`, {
             method: "GET",
@@ -35,6 +35,7 @@ export async function getCustomerData(): Promise<Customer[]> {
 export async function getCustomerTypeData(): Promise<CustomerType[]> {
     const cookies = await getCookies("refreshToken");
     const token = cookies?.value;
+    const url = process.env.BASE_URL;
     try{
         const response = await fetch(`${url}/customertype/getall`, {
             method: "GET",
