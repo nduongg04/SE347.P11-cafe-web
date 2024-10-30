@@ -1,5 +1,8 @@
 "use client";
 
+import { getCookies } from "@/lib/action";
+import * as React from "react";
+import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table"
 import { Pencil, ArrowUpDown } from "lucide-react"
 import {
@@ -19,16 +22,20 @@ import { Checkbox } from "@/components/ui/checkbox"
 // You can use a Zod schema here if you want.
 
 export type Staff = {
-  appUserId: string
+  staffId: string
   staffName: string
-  userName: string
+  username: string
   isAdmin: boolean
-  password: string
 }
 
-export const columns: ColumnDef<Staff>[] = [
+export const columns: (
+  onUpdate: (
+    staff: string, 
+    staffName: string, 
+    username: string
+  ) => void) => ColumnDef<Staff>[] =(onUpdate) => [
   {
-    accessorKey: "appUserId",
+    accessorKey: "staffId",
     header: "ID",
   },
   {
@@ -36,7 +43,7 @@ export const columns: ColumnDef<Staff>[] = [
     header: "Full name"
   },
   {
-    accessorKey: "userName",
+    accessorKey: "username",
     header: "Account"
   },
   {
@@ -49,7 +56,45 @@ export const columns: ColumnDef<Staff>[] = [
   {
     id: "actions",
       cell: ({ row }) => {
-        const staff = row.original
+        const staff= row.original;
+        const [staffName, setStaffName] = React.useState(staff.staffName);
+        const [username, setUserName] = React.useState(staff.username);
+
+        const handleSave = async () => {
+          if (staffName == staff.staffName && username == staff.username){
+            toast.info('No changes detected');
+            return;
+          }
+          if(staffName.length <10 || username.length < 10){
+            toast.error('Full name and username must be at least 10 characters');
+            return;
+          }
+          const cookies = await getCookies('refreshToken');
+          const token = cookies?.value;
+          const url = process.env.BASE_URL;
+          if (staffName !== staff.staffName || username !== staff.username) {
+            try {
+              const response = await fetch(`${url}/staff/update/${row.original.staffId}`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ staffName: staffName, username: username})
+              });
+              if (!response.ok) {
+                toast.error('Failed to update staff: ');
+                return;
+              }
+              const result = await response.json();
+              onUpdate(staff.staffId, staffName, username);
+              toast.success("Staff updated successfully");
+            } catch (error) {
+              toast.error('Failed to update staff: '+ error);
+            }
+          }
+        };
+        
         return (
           <Dialog>
             <DialogTrigger asChild>
@@ -57,7 +102,7 @@ export const columns: ColumnDef<Staff>[] = [
             </DialogTrigger>
             <DialogContent >
               <DialogHeader>
-                <DialogTitle>Edit staff #{staff.appUserId}</DialogTitle>
+                <DialogTitle>Edit staff #{staff.staffId}</DialogTitle>
                 <DialogDescription>
                   Make changes to staff here. Click save when you're done.
                 </DialogDescription>
@@ -66,20 +111,16 @@ export const columns: ColumnDef<Staff>[] = [
                 <table className="border-spacing-2 border-separate">
                   <tr >
                     <td >Full name</td>
-                    <td ><Input defaultValue={staff.staffName} /></td>
+                    <td ><Input defaultValue={staff.staffName} value={staffName} onChange={(e)=>setStaffName(e.target.value)} /></td>
                   </tr>
                   <tr >
                     <td >Account</td>
-                    <td ><Input defaultValue={staff.userName} /></td>
-                  </tr>
-                  <tr>
-                    <td >Password</td>
-                    <td ><Input type="password" defaultValue={staff.password} /></td>
+                    <td ><Input defaultValue={staff.username} value={username} onChange={(e)=>setUserName(e.target.value)} /></td>
                   </tr>
                 </table>            
               </div>
               <DialogFooter>
-                <Button type="submit" className="bg-green-600 hover:bg-green-500">Save changes</Button>
+                <Button type="submit" className="bg-green-600 hover:bg-green-500" onClick={handleSave}>Save changes</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
