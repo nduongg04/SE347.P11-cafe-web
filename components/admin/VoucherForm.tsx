@@ -34,6 +34,13 @@ export const formSchema = z
     code: z.string().min(2, {
       message: "Code must be at least 2 characters.",
     }),
+    value: z.string().refine(
+      (v) => {
+        let n = Number(v);
+        return !isNaN(n) && n > 0 && v?.length > 0;
+      },
+      { message: "Value must be a number and greater than 0" },
+    ),
     typeName: z.enum(["Percentage of bill", "Discount directly on invoice"]),
     numberOfApplications: z.string().refine(
       (v) => {
@@ -66,10 +73,12 @@ const VoucherForm = ({
   formMessage,
 }: VoucherFormProps) => {
   const [isExecuting, setIsExecuting] = useState(false);
+  const [isPercentage, setIsPercentage] = useState(true);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       code: editingVoucher?.code || "",
+      value: editingVoucher?.value.toString() || "",
       typeName: editingVoucher?.typeName || "Percentage of bill",
       numberOfApplications:
         editingVoucher?.numberOfApplications.toString() || "1",
@@ -109,6 +118,7 @@ const VoucherForm = ({
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="typeName"
@@ -117,7 +127,14 @@ const VoucherForm = ({
                 <div className="grid grid-cols-4 items-center gap-4">
                   <FormLabel className="text-right">Type name</FormLabel>
                   <FormControl>
-                    <Select value={value} onValueChange={onChange} {...rest}>
+                    <Select
+                      value={value}
+                      onValueChange={(newValue) => {
+                        onChange(newValue);
+                        setIsPercentage(newValue === "Percentage of bill");
+                      }}
+                      {...rest}
+                    >
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
@@ -130,6 +147,26 @@ const VoucherForm = ({
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="value"
+            render={({ field }) => (
+              <FormItem>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <FormLabel className="text-right">Value</FormLabel>
+                  <FormControl>
+                    <div className="relative col-span-3">
+                      <Input {...field} className="" type="number" />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                        {isPercentage ? "%" : "VND"}
+                      </span>
+                    </div>
                   </FormControl>
                 </div>
                 <FormMessage />

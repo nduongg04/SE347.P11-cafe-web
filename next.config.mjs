@@ -5,7 +5,6 @@ const nextConfig = {
     },
 	images: {
 		domains: ["img.pikbest.com"],
-		
 	},
 };
 
