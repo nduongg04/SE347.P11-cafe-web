@@ -29,103 +29,46 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format } from "date-fns";
+import { getAllVouchers } from "@/lib/actions/voucher.action";
+import { authenticatedFetch } from "@/lib/auth";
+import { format, set } from "date-fns";
 import { Pencil, Plus, Search, TriangleAlert, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
-export interface Voucher {
-  id: number;
-  code: string;
-  typeName: "Percentage of bill" | "Discount directly on invoice";
-  numberOfApplications: number;
-  createdAt: Date;
-  expiredAt: Date;
-}
 
-const initialVouchers: Voucher[] = [
-  {
-    id: 1,
-    code: "SU",
-    typeName: "Percentage of bill",
-    numberOfApplications: 1000,
-    createdAt: new Date("2024-09-10"),
-    expiredAt: new Date("2024-10-10"),
-  },
-  {
-    id: 2,
-    code: "2",
-    typeName: "Percentage of bill",
-    numberOfApplications: 1000,
-    createdAt: new Date("2024-09-10"),
-    expiredAt: new Date("2024-10-10"),
-  },
-  {
-    id: 3,
-    code: "3",
-    typeName: "Percentage of bill",
-    numberOfApplications: 1000,
-    createdAt: new Date("2024-09-10"),
-    expiredAt: new Date("2024-10-10"),
-  },
-  {
-    id: 4,
-    code: "4",
-    typeName: "Percentage of bill",
-    numberOfApplications: 1000,
-    createdAt: new Date("2024-09-10"),
-    expiredAt: new Date("2024-10-10"),
-  },
-  {
-    id: 5,
-    code: "5",
-    typeName: "Percentage of bill",
-    numberOfApplications: 1000,
-    createdAt: new Date("2024-09-10"),
-    expiredAt: new Date("2024-10-10"),
-  },
-  {
-    id: 6,
-    code: "6",
-    typeName: "Discount directly on invoice",
-    numberOfApplications: 1000,
-    createdAt: new Date("2024-09-10"),
-    expiredAt: new Date("2024-10-10"),
-  },
-  {
-    id: 7,
-    code: "VIETNAM",
-    typeName: "Discount directly on invoice",
-    numberOfApplications: 1000,
-    createdAt: new Date("2024-09-10"),
-    expiredAt: new Date("2024-10-10"),
-  },
-  {
-    id: 8,
-    code: "8",
-    typeName: "Discount directly on invoice",
-    numberOfApplications: 1000,
-    createdAt: new Date("2024-09-10"),
-    expiredAt: new Date("2024-10-10"),
-  },
-  {
-    id: 9,
-    code: "9",
-    typeName: "Discount directly on invoice",
-    numberOfApplications: 1000,
-    createdAt: new Date("2024-09-10"),
-    expiredAt: new Date("2024-10-10"),
-  },
-];
 
 export default function VoucherManagement() {
-  const [vouchers, setVouchers] = useState<Voucher[]>(initialVouchers);
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedVouchers, setSelectedVouchers] = useState<number[]>([]);
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [editOrAdd, setEditOrAdd] = useState<"edit" | "add">("add");
   const [formMessage, setFormMessage] = useState<string>("");
+  useEffect(() => {
+    const fetchVouchers = async () => {
+      const voucherData = await getAllVouchers();
+      if (!voucherData) {
+        //TODO: Show message box
+        setVouchers([]);
+      } else {
+        setVouchers(
+          voucherData.map((v: any) => ({
+            id: v.voucherID,
+            code: v.voucherCode,
+            value: v.voucherValue,
+            typeName: v.voucherType.typeName,
+            numberOfApplications: v.maxApply,
+            createdAt: v.createdDate,
+            expiredAt: v.expiredDate,
+          })),
+        );
+      }
+    };
+
+    fetchVouchers();
+  }, []);
 
   const handleAddVoucher = () => {
     setEditingVoucher(null);
@@ -163,14 +106,14 @@ export default function VoucherManagement() {
   };
 
   const handleAddSubmit = async (values: z.infer<typeof formSchema>) => {
-    setVouchers([
-      ...vouchers,
-      {
-        id: vouchers.length + 1,
-        ...values,
-        numberOfApplications: Number(values.numberOfApplications),
-      },
-    ]);
+    // setVouchers([
+    //   ...vouchers,
+    //   {
+    //     id: vouchers.length + 1,
+    //     ...values,
+    //     numberOfApplications: Number(values.numberOfApplications),
+    //   },
+    // ]);
     console.log(values);
   };
 
@@ -181,7 +124,7 @@ export default function VoucherManagement() {
   useEffect(() => {
     const handleSearch = () => {
       setVouchers(
-        initialVouchers.filter((v) =>
+        vouchers.filter((v) =>
           v.code.toLowerCase().includes(searchTerm.toLowerCase()),
         ),
       );
@@ -280,7 +223,10 @@ export default function VoucherManagement() {
             <TableHead className="text-right">Actions</TableHead>
             <TableHead className="w-[50px]">
               <Checkbox
-                checked={selectedVouchers.length === vouchers.length}
+                checked={
+                  selectedVouchers.length !== 0 &&
+                  selectedVouchers.length === vouchers.length
+                }
                 onCheckedChange={handleSelectAllVouchers}
                 aria-label="Select all"
               />
