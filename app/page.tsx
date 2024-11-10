@@ -9,16 +9,17 @@ const Home = () => {
         const handleCookie = async () => {
             const userCookie = await getCookies("user");
             const userString = userCookie?.value;
-            if (userString) {
-                const user: User = JSON.parse(userString);
-                if (user.isAdmin) {
-                    navigate("/admin");
-                } else {
-                    navigate("/employee");
-                }
-            } else {
-                navigate("/login");
-            }
+            navigate("/admin");
+            // if (userString) {
+            //     const user: User = JSON.parse(userString);
+            //     if (user.isAdmin) {
+            //         navigate("/admin");
+            //     } else {
+            //         navigate("/employee");
+            //     }
+            // } else {
+            //     navigate("/login");
+            // }
         };
         handleCookie();
     });
