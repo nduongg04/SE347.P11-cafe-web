@@ -32,12 +32,12 @@ const Navbar = () => {
       },
     {
       label: "Customer",
-      href: "/admin/customer",
+      href: "/employee/customer",
       icon: "customer",
     },
     {
       label: "Bill",
-      href: "/admin/bill",
+      href: "/employee/bill",
       icon: "bill",
     },
   ];
@@ -50,7 +50,7 @@ const Navbar = () => {
     return (
         <div className="flex min-h-full w-1/6 flex-col gap-10 bg-white">
             <div className="flex flex-col gap-1 p-7">
-                <Link href="/admin">
+                <Link href="/employee">
                     <Image
                         src="/assets/icons/logo.svg"
                         alt="logo"

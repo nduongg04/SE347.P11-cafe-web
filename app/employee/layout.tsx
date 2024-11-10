@@ -8,7 +8,7 @@ export default function EmployeeLayout({children}: Props) {
   return (
     <div className="flex min-h-screen flex-row bg-[#F3F2F7]">
             <Navbar />
-            <div className="flex-1">{children}</div>
+            <div className="flex-1 mx-[1%]">{children}</div>
         </div>
   )
 }
