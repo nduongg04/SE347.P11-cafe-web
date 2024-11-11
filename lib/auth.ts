@@ -26,11 +26,12 @@ export async function authenticatedFetch(
 
   if (response.status === 401) {
     // Token might be expired, attempt to refresh
-    const newTokens = await refreshTokens();
+    const newTokens = (await refreshTokens())?.accessToken;
     if (newTokens) {
       // Retry the request with the new access token
       headers["Authorization"] = `Bearer ${newTokens}`;
-      return fetch(url, { ...options, headers });
+      const newResponse = await fetch(url, { ...options, headers });
+      return newResponse;
     } else {
       throw new Error("Authentication failed");
     }
@@ -40,8 +41,7 @@ export async function authenticatedFetch(
     throw new Error("Failed to fetch data");
   }
 
-  const data = await response.json();
-  return data;
+  return response;
 }
 
 async function refreshTokens() {

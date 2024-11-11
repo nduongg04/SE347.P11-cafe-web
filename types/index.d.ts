@@ -1,4 +1,6 @@
-declare type VoucherType = "Percentage of bill" | "Discount directly on invoice";
+declare type VoucherType =
+  | "Percentage of bill"
+  | "Discount directly on invoice";
 
 declare type Voucher = {
   id: number;
@@ -8,7 +10,7 @@ declare type Voucher = {
   numberOfApplications: number;
   createdAt: Date;
   expiredAt: Date;
-}
+};
 
 declare type VoucherApi = {
   voucherID: number;
@@ -23,5 +25,17 @@ declare type VoucherApi = {
   expiredDate: string;
 };
 
+declare type Category = {
+  categoryID: number;
+  categoryName: string;
+  icon: ForwardRefExoticComponent<any>;
+};
 
-
+declare type Dish = {
+  productID: number;
+  productName: string;
+  price: number;
+  image: string;
+  isSoldOut: boolean;
+  categoryName: string;
+};
