@@ -72,7 +72,7 @@ export default function ProductMenu() {
   const addMutation = useMutation({
     mutationFn: async (newDish: z.infer<typeof dishFormSchema>) => {
       setIsLoading(true);
-      if (newDish.image instanceof File) {
+      if (typeof window !== 'undefined' && newDish.image instanceof File) {
         const formData = new FormData();
         formData.append("file", newDish.image);
         const uploadImageUrl = (await uploadImage(formData))?.imageUrl;
@@ -118,7 +118,7 @@ export default function ProductMenu() {
 
       let imageUrl = editingDish.image;
 
-      if (updatedDish.image && updatedDish.image instanceof File) {
+      if (typeof window !== 'undefined' && updatedDish.image instanceof File) {
         try {
           const formData = new FormData();
           formData.append("file", updatedDish.image);
