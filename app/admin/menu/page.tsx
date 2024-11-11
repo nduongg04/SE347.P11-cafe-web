@@ -23,7 +23,7 @@ import {
 import { uploadImage } from "@/lib/actions/upload.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Tally3, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as z from "zod";
 
 import { useDebounce } from "@/hooks/use-debounce";
@@ -38,6 +38,10 @@ export default function ProductMenu() {
   const categories = initialCategories;
 
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    console.log(activeCategory);
+  }, [activeCategory]);
 
   const { data: dishes = [] as Dish[], isLoading: isFetching } = useQuery<
     Dish[]
@@ -63,7 +67,7 @@ export default function ProductMenu() {
         (activeCategory === "all" || d.categoryName === activeCategory) &&
         d.productName.toLowerCase().includes(debouncedSearchTerm.toLowerCase()),
     );
-  }, [debouncedSearchTerm, dishes]);
+  }, [debouncedSearchTerm, dishes, activeCategory]);
 
   const addMutation = useMutation({
     mutationFn: async (newDish: z.infer<typeof dishFormSchema>) => {
