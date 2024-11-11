@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 export async function middleware(req: NextRequest) {
     const baseURL = process.env.BASE_URL;
     const refreshToken = req.cookies.get("refreshToken");
-    console.log(refreshToken);
     if (
         refreshToken == undefined ||
         refreshToken == null ||

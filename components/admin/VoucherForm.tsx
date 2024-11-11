@@ -1,6 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
 import { CalendarIcon, Loader } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
@@ -19,7 +19,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { Voucher } from "@/app/admin/voucher/page";
 import {
   Form,
   FormControl,
@@ -31,20 +30,39 @@ import {
 
 export const formSchema = z
   .object({
-    code: z.string().min(2, {
-      message: "Code must be at least 2 characters.",
+    code: z.string().min(5, {
+      message: "Code must be at least 5 characters.",
     }),
+    value: z.string().refine(
+      (v) => {
+        let n = Number(v);
+        return !isNaN(n) && n > 0 && v?.length > 0;
+      },
+      { message: "Value must be a number and greater than 0" },
+    ),
     typeName: z.enum(["Percentage of bill", "Discount directly on invoice"]),
     numberOfApplications: z.string().refine(
       (v) => {
         let n = Number(v);
-        return !isNaN(n) && v?.length > 0;
+        return !isNaN(n) && v?.length > 0 && n > 0;
       },
-      { message: "Invalid number" },
+      { message: "Number of applications must be a number and greater than 0" },
     ),
     createdAt: z.date(),
     expiredAt: z.date(),
   })
+  .refine(
+    (data) => {
+      if (data.typeName === "Percentage of bill") {
+        return Number(data.value) <= 100;
+      }
+      return true;
+    },
+    {
+      message: "Percentage value must not exceed 100%",
+      path: ["value"],
+    },
+  )
   .refine((data) => data.expiredAt > data.createdAt, {
     path: ["expiredAt"],
     message: "Expired at must be greater than or equal to created at",
@@ -56,6 +74,7 @@ type VoucherFormProps = {
   editingVoucher: Voucher | null;
   handleSubmit: (values: z.infer<typeof formSchema>) => Promise<void>;
   formMessage?: string;
+  isLoading: boolean;
 };
 
 const VoucherForm = ({
@@ -64,26 +83,28 @@ const VoucherForm = ({
   editingVoucher,
   handleSubmit,
   formMessage,
+  isLoading,
 }: VoucherFormProps) => {
-  const [isExecuting, setIsExecuting] = useState(false);
+  const [isPercentage, setIsPercentage] = useState(
+    !editingVoucher || editingVoucher.typeName === "Percentage of bill"
+  );
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       code: editingVoucher?.code || "",
+      value: editingVoucher?.value.toString() || "",
       typeName: editingVoucher?.typeName || "Percentage of bill",
       numberOfApplications:
         editingVoucher?.numberOfApplications.toString() || "1",
-      createdAt:
-        editingVoucher?.createdAt ||
-        new Date(new Date().setDate(new Date().getDate() - 1)),
-      expiredAt: editingVoucher?.expiredAt || new Date(),
+      createdAt: editingVoucher?.createdAt || new Date(),
+      expiredAt:
+        editingVoucher?.expiredAt ||
+        new Date(new Date().setDate(new Date().getDate() + 1)),
     },
   });
 
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsExecuting(true);
     await handleSubmit(values);
-    setIsExecuting(false);
     setIsDialogOpen(false);
   };
 
@@ -109,6 +130,7 @@ const VoucherForm = ({
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="typeName"
@@ -117,7 +139,14 @@ const VoucherForm = ({
                 <div className="grid grid-cols-4 items-center gap-4">
                   <FormLabel className="text-right">Type name</FormLabel>
                   <FormControl>
-                    <Select value={value} onValueChange={onChange} {...rest}>
+                    <Select
+                      value={value}
+                      onValueChange={(newValue) => {
+                        onChange(newValue);
+                        setIsPercentage(newValue === "Percentage of bill");
+                      }}
+                      {...rest}
+                    >
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
@@ -130,6 +159,43 @@ const VoucherForm = ({
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                  </FormControl>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="value"
+            render={({ field }) => (
+              <FormItem>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <FormLabel className="text-right">Value</FormLabel>
+                  <FormControl>
+                    <div className="relative col-span-3">
+                      <Input
+                        {...field}
+                        className=""
+                        type="text"
+                        inputMode="numeric"
+                        value={
+                          !isPercentage
+                            ? field.value
+                              ? Number(field.value).toLocaleString("en-US")
+                              : ""
+                            : field.value
+                        }
+                        onChange={(e) => {
+                          // Remove non-numeric characters and update
+                          const value = e.target.value.replace(/[^\d]/g, "");
+                          field.onChange(value);
+                        }}
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                        {isPercentage ? "%" : "VND"}
+                      </span>
+                    </div>
                   </FormControl>
                 </div>
                 <FormMessage />
@@ -166,6 +232,7 @@ const VoucherForm = ({
                         <Button
                           variant={"outline"}
                           className={`col-span-3 justify-start text-left font-normal ${!field.value && "text-muted-foreground"}`}
+													disabled={true}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {field.value ? (
@@ -214,6 +281,7 @@ const VoucherForm = ({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
                         <Calendar
+                          fromDate={addDays(form.getValues("createdAt"), 1)}
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
@@ -234,8 +302,8 @@ const VoucherForm = ({
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
-            <Button disabled={isExecuting} type="submit">
-              {isExecuting ? (
+            <Button disabled={isLoading} type="submit">
+              {isLoading ? (
                 <Loader className="animate-spin" />
               ) : editOrAdd === "edit" ? (
                 "Save"
