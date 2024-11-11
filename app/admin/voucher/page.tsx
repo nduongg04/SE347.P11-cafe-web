@@ -29,46 +29,122 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getAllVouchers } from "@/lib/actions/voucher.action";
+import { toast, useToast } from "@/hooks/use-toast";
+import {
+  createVoucher,
+  deleteVouchers,
+  getAllVouchers,
+  updateVoucher,
+} from "@/lib/actions/voucher.action";
 import { authenticatedFetch } from "@/lib/auth";
 import { format, set } from "date-fns";
 import { Pencil, Plus, Search, TriangleAlert, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { z } from "zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useDebounce } from "@/hooks/use-debounce";
+import Loader from "@/components/admin/Loader";
 
-
+function adjustToLocalDate(date: Date): Date {
+  const localDate = new Date(date);
+  localDate.setHours(0, 0, 0, 0);
+  const timezoneOffset = localDate.getTimezoneOffset() * 60000; // convert to milliseconds
+  return new Date(localDate.getTime() - timezoneOffset);
+}
 
 export default function VoucherManagement() {
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedVouchers, setSelectedVouchers] = useState<number[]>([]);
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [editOrAdd, setEditOrAdd] = useState<"edit" | "add">("add");
   const [formMessage, setFormMessage] = useState<string>("");
-  useEffect(() => {
-    const fetchVouchers = async () => {
-      const voucherData = await getAllVouchers();
-      if (!voucherData) {
-        //TODO: Show message box
-        setVouchers([]);
-      } else {
-        setVouchers(
-          voucherData.map((v: any) => ({
-            id: v.voucherID,
-            code: v.voucherCode,
-            value: v.voucherValue,
-            typeName: v.voucherType.typeName,
-            numberOfApplications: v.maxApply,
-            createdAt: v.createdDate,
-            expiredAt: v.expiredDate,
-          })),
-        );
-      }
-    };
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-    fetchVouchers();
-  }, []);
+  const { data: vouchers = [] as Voucher[], isLoading: isLoadingVouchers } =
+    useQuery({
+      queryKey: ["vouchers"],
+      queryFn: async () => {
+        const vouchers = await getAllVouchers();
+        if (!vouchers) {
+          toast({
+            title: "Failed to fetch vouchers",
+            description: "Please try again",
+            variant: "destructive",
+          });
+          return [] as Voucher[];
+        }
+        return vouchers;
+      },
+    });
+
+  const createMutation = useMutation({
+    mutationFn: createVoucher,
+    onSuccess: (newVoucher) => {
+      queryClient.invalidateQueries({ queryKey: ["vouchers"] });
+      toast({
+        title: "Success",
+        description: "Voucher added successfully",
+        variant: "success",
+      });
+      setIsDialogOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add voucher",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateVoucher,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vouchers"] });
+      toast({
+        title: "Success",
+        description: "Voucher updated successfully",
+        variant: "success",
+      });
+      setIsDialogOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update voucher",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteVouchers,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vouchers"] });
+      setSelectedVouchers([]);
+      toast({
+        title: "Success",
+        description: "Vouchers deleted successfully",
+        variant: "success",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete vouchers",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const filteredVouchers = useMemo(() => {
+    if (!debouncedSearchTerm) return vouchers;
+    return vouchers.filter((v) =>
+      v.code.toLowerCase().includes(debouncedSearchTerm.toLowerCase()),
+    );
+  }, [debouncedSearchTerm, vouchers]);
 
   const handleAddVoucher = () => {
     setEditingVoucher(null);
@@ -100,38 +176,34 @@ export default function VoucherManagement() {
     );
   };
 
-  const handleDeleteSelected = () => {
-    setVouchers(vouchers.filter((v) => !selectedVouchers.includes(v.id)));
-    setSelectedVouchers([]);
-  };
-
   const handleAddSubmit = async (values: z.infer<typeof formSchema>) => {
-    // setVouchers([
-    //   ...vouchers,
-    //   {
-    //     id: vouchers.length + 1,
-    //     ...values,
-    //     numberOfApplications: Number(values.numberOfApplications),
-    //   },
-    // ]);
-    console.log(values);
+    const updatedValues = {
+      ...values,
+      numberOfApplications: Number(values.numberOfApplications),
+      value: Number(values.value),
+      createdAt: adjustToLocalDate(values.createdAt),
+      expiredAt: adjustToLocalDate(values.expiredAt),
+    };
+    createMutation.mutate(updatedValues);
   };
 
   const handleEditSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    const updatedValues = {
+      ...values,
+      id: editingVoucher!.id,
+      value: Number(values.value),
+      numberOfApplications: Number(values.numberOfApplications),
+      createdAt: adjustToLocalDate(values.createdAt),
+      expiredAt: adjustToLocalDate(values.expiredAt),
+    };
+    updateMutation.mutate(updatedValues);
   };
 
-  useEffect(() => {
-    const handleSearch = () => {
-      setVouchers(
-        vouchers.filter((v) =>
-          v.code.toLowerCase().includes(searchTerm.toLowerCase()),
-        ),
-      );
-    };
+  const handleDeleteConfirm = () => {
+    deleteMutation.mutate(selectedVouchers);
+  };
 
-    handleSearch();
-  }, [searchTerm]);
+  const isLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
     <div className="container mx-auto p-4">
@@ -143,7 +215,7 @@ export default function VoucherManagement() {
             <Input
               type="text"
               placeholder="Search by code..."
-              className="w-full border-gray-300 py-2 pl-10 pr-4 focus:border-[#00B074] focus:ring-[#00B074] sm:w-96"
+              className="w-64 border-gray-300 py-2 pl-10 pr-4 focus:border-[#00B074] focus:ring-[#00B074] lg:w-full"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -166,11 +238,15 @@ export default function VoucherManagement() {
                 Add Voucher
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent
+              className="pointer-events-auto"
+              onClick={(e) => isLoading && e.stopPropagation()}
+            >
               <DialogHeader>
                 <DialogTitle>Voucher detail</DialogTitle>
               </DialogHeader>
               <VoucherForm
+                isLoading={isLoading}
                 setIsDialogOpen={setIsDialogOpen}
                 editingVoucher={editingVoucher && editingVoucher}
                 editOrAdd={editOrAdd}
@@ -185,11 +261,10 @@ export default function VoucherManagement() {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
-                onClick={handleDeleteSelected}
                 variant="destructive"
                 disabled={selectedVouchers.length === 0}
               >
-                Delete vouchers
+                {isLoading ? "Deleting..." : "Delete vouchers"}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -202,7 +277,7 @@ export default function VoucherManagement() {
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-green-600 hover:bg-green-500"
-                  onClick={handleDeleteSelected}
+                  onClick={handleDeleteConfirm}
                 >
                   Continue
                 </AlertDialogAction>
@@ -211,57 +286,67 @@ export default function VoucherManagement() {
           </AlertDialog>
         </div>
       </div>
-      <Table className="rounded-lg bg-white">
-        <TableHeader className="">
-          <TableRow>
-            <TableHead>No</TableHead>
-            <TableHead>Code</TableHead>
-            <TableHead>Type name</TableHead>
-            <TableHead>Number of applications</TableHead>
-            <TableHead>Created at</TableHead>
-            <TableHead>Expired at</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-            <TableHead className="w-[50px]">
-              <Checkbox
-                checked={
-                  selectedVouchers.length !== 0 &&
-                  selectedVouchers.length === vouchers.length
-                }
-                onCheckedChange={handleSelectAllVouchers}
-                aria-label="Select all"
-              />
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {vouchers.map((voucher, index) => (
-            <TableRow key={voucher.id}>
-              <TableCell>{index + 1}</TableCell>
-              <TableCell>{voucher.code}</TableCell>
-              <TableCell>{voucher.typeName}</TableCell>
-              <TableCell>{voucher.numberOfApplications}</TableCell>
-              <TableCell>{format(voucher.createdAt, "dd/MM/yyyy")}</TableCell>
-              <TableCell>{format(voucher.expiredAt, "dd/MM/yyyy")}</TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleEditVoucher(voucher)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </TableCell>
-              <TableCell>
+      {isLoadingVouchers ? (
+        <Loader />
+      ) : (
+        <Table className="rounded-lg bg-white">
+          <TableHeader className="">
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>Code</TableHead>
+              <TableHead>Type name</TableHead>
+              <TableHead>Value</TableHead>
+              <TableHead>Number of applications</TableHead>
+              <TableHead>Created at</TableHead>
+              <TableHead>Expired at</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[50px]">
                 <Checkbox
-                  checked={selectedVouchers.includes(voucher.id)}
-                  onCheckedChange={() => handleSelectVoucher(voucher.id)}
-                  aria-label={`Select voucher ${voucher.code}`}
+                  checked={
+                    selectedVouchers.length !== 0 &&
+                    selectedVouchers.length === vouchers.length
+                  }
+                  onCheckedChange={handleSelectAllVouchers}
+                  aria-label="Select all"
                 />
-              </TableCell>
+              </TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredVouchers.map((voucher, index) => (
+              <TableRow key={voucher.id}>
+                <TableCell>{voucher.id}</TableCell>
+                <TableCell>{voucher.code}</TableCell>
+                <TableCell>{voucher.typeName}</TableCell>
+                <TableCell>
+                  {voucher.typeName === "Percentage of bill"
+                    ? `${voucher.value}%`
+                    : `${voucher.value.toLocaleString("vi-VN")} VNĐ`}
+                </TableCell>
+                <TableCell>{voucher.numberOfApplications}</TableCell>
+                <TableCell>{format(voucher.createdAt, "dd/MM/yyyy")}</TableCell>
+                <TableCell>{format(voucher.expiredAt, "dd/MM/yyyy")}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEditVoucher(voucher)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedVouchers.includes(voucher.id)}
+                    onCheckedChange={() => handleSelectVoucher(voucher.id)}
+                    aria-label={`Select voucher ${voucher.code}`}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </div>
   );
 }

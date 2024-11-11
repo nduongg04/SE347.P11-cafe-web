@@ -1,350 +1,247 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import Image from "next/image"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import CategoryButton from "@/components/admin/CategoryButton";
+import DishCardMenu from "@/components/admin/DishCardMenu";
+import DishForm, { dishFormSchema } from "@/components/admin/DishForm";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Pizza, Utensils, Coffee, Drumstick, Fish, Cake, Plus, PenSquare, Search, X, Upload } from "lucide-react"
-
-interface Category {
-  id: string
-  name: string
-  icon: React.ElementType
-  image: string
-}
-
-interface Dish {
-  id: string
-  categoryId: string
-  productName: string
-  price: number
-  imageUrl: string
-}
-
-const initialCategories: Category[] = [
-  { id: "all", name: "All", icon: Utensils, image: "/placeholder.svg?height=100&width=100" },
-  { id: "bakery", name: "Bakery", icon: Cake, image: "/placeholder.svg?height=100&width=100" },
-  { id: "burger", name: "Burger", icon: Utensils, image: "/placeholder.svg?height=100&width=100" },
-  { id: "beverage", name: "Beverage", icon: Coffee, image: "/placeholder.svg?height=100&width=100" },
-  { id: "chicken", name: "Chicken", icon: Drumstick, image: "/placeholder.svg?height=100&width=100" },
-  { id: "pizza", name: "Pizza", icon: Pizza, image: "/placeholder.svg?height=100&width=100" },
-  { id: "seafood", name: "Seafood", icon: Fish, image: "/placeholder.svg?height=100&width=100" },
-]
-
-const initialDishes: Dish[] = [
-  {
-    id: "1",
-    categoryId: "burger",
-    productName: "Classic Cheeseburger",
-    price: 5.99,
-    imageUrl: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "2",
-    categoryId: "pizza",
-    productName: "Margherita Pizza",
-    price: 8.99,
-    imageUrl: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "3",
-    categoryId: "beverage",
-    productName: "Iced Latte",
-    price: 3.99,
-    imageUrl: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "4",
-    categoryId: "seafood",
-    productName: "Grilled Salmon",
-    price: 12.99,
-    imageUrl: "/placeholder.svg?height=200&width=200",
-  },
-]
-
-function CategoryButton({ category, isActive, onClick }: { category: Category; isActive: boolean; onClick: () => void }) {
-  return (
-    <Button
-      variant={isActive ? "default" : "ghost"}
-      className={`flex items-center space-x-2 ${isActive ? 'bg-[#00B074] text-white' : 'text-gray-600 hover:text-[#00B074]'}`}
-      onClick={onClick}
-    >
-      <category.icon className="w-4 h-4" />
-      <span>{category.name}</span>
-    </Button>
-  )
-}
-
-function DishCard({ dish, category, onModify }: { dish: Dish; category: Category; onModify: () => void }) {
-  return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg group">
-      <div className="relative h-48">
-        <Image
-          src={dish.imageUrl}
-          alt={dish.productName}
-          layout="fill"
-          objectFit="cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-start p-4">
-          <Button size="sm" variant="secondary" className="text-white bg-[#00B074] hover:bg-[#00956A]" onClick={onModify}>
-            <PenSquare className="w-4 h-4 mr-2" />
-            Modify
-          </Button>
-        </div>
-      </div>
-      <CardContent className="p-4">
-        <div className="flex items-center space-x-2 mb-2">
-          <category.icon className="w-4 h-4 text-[#00B074]" />
-          <span className="text-sm text-gray-500">{category.name}</span>
-        </div>
-        <h3 className="font-semibold text-lg mb-2">{dish.productName}</h3>
-        <span className="text-lg font-bold text-[#00B074]">${dish.price.toFixed(2)}</span>
-      </CardContent>
-    </Card>
-  )
-}
-
-function ImageUploader({ image, onImageUpload }: { image: string; onImageUpload: (imageUrl: string) => void }) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const imageUrl = URL.createObjectURL(file)
-      onImageUpload(imageUrl)
-    }
-  }
-
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    const file = event.dataTransfer.files?.[0]
-    if (file) {
-      const imageUrl = URL.createObjectURL(file)
-      onImageUpload(imageUrl)
-    }
-  }
-
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-  }
-
-  const handleClick = () => {
-    fileInputRef.current?.click()
-  }
-  console.log(image);
-  return (
-    <div 
-      className="flex items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden"
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      onClick={handleClick}
-    >
-      {image && image !== "" ? (
-		
-        <Image src={image} alt="Selected image" layout="fill" objectFit="contain" />
-      ) : (
-        <div className="flex flex-col items-center justify-center">
-          <Upload className="w-8 h-8 mb-2 text-gray-500" />
-          <p className="text-sm text-gray-500">Click or drag image</p>
-        </div>
-      )}
-      <Input
-        id="dropzone-file"
-        type="file"
-        className="hidden"
-        accept="image/*"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-      />
-    </div>
-  )
-}
-
-function CategoryForm({ category, onSubmit, onCancel }: { category?: Category; onSubmit: (category: Partial<Category>) => void; onCancel: () => void }) {
-  const [name, setName] = useState(category?.name || "")
-  const [image, setImage] = useState(category?.image || "")
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit({ name, image })
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
-        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-      </div>
-      <div className="space-y-2">
-        <Label>Image</Label>
-        <ImageUploader image={image} onImageUpload={setImage} />
-      </div>
-      <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit">Submit</Button>
-      </div>
-    </form>
-  )
-}
-
-function DishForm({ dish, categories, onSubmit, onCancel }: { dish?: Dish; categories: Category[]; onSubmit: (dish: Partial<Dish>) => void; onCancel: () => void }) {
-  const [productName, setProductName] = useState(dish?.productName || "")
-  const [price, setPrice] = useState(dish?.price.toString() || "")
-  const [imageUrl, setImageUrl] = useState(dish?.imageUrl || "")
-  const [categoryId, setCategoryId] = useState(dish?.categoryId || "")
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit({ productName, price: parseFloat(price), imageUrl, categoryId })
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="productName">Name</Label>
-        <Input id="productName" value={productName} onChange={(e) => setProductName(e.target.value)} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="price">Price</Label>
-        <Input id="price" type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} required />
-      </div>
-      <div className="space-y-2">
-        <Label>Image</Label>
-        <ImageUploader image={imageUrl} onImageUpload={setImageUrl} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="category">Category</Label>
-        <Select value={categoryId} onValueChange={setCategoryId}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.filter(c => c.id !== "all").map((category) => (
-              <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit">Submit</Button>
-      </div>
-    </form>
-  )
-}
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { initialCategories } from "@/constants";
+import { toast } from "@/hooks/use-toast";
+import {
+  addProduct,
+  deleteProduct,
+  getAllProduct,
+  updateProduct,
+} from "@/lib/actions/menu.action";
+import { uploadImage } from "@/lib/actions/upload.action";
+import { Loader2, Plus, Search, Tally3, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import * as z from "zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export default function ProductMenu() {
-  const [activeCategory, setActiveCategory] = useState<string>("all")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [categories, setCategories] = useState<Category[]>(initialCategories)
-  const [dishes, setDishes] = useState<Dish[]>(initialDishes)
-  const [isAddCategoryDialogOpen, setIsAddCategoryDialogOpen] = useState(false)
-  const [isAddDishDialogOpen, setIsAddDishDialogOpen] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
-  const [editingDish, setEditingDish] = useState<Dish | null>(null)
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isAddDishDialogOpen, setIsAddDishDialogOpen] = useState(false);
+  const [editingDish, setEditingDish] = useState<Dish | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const categories = initialCategories;
 
-  const filteredDishes = dishes.filter(dish => 
-    (activeCategory === "all" || dish.categoryId === activeCategory) &&
-    dish.productName.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const queryClient = useQueryClient();
 
-  const handleAddCategory = (newCategory: Partial<Category>) => {
-    const category: Category = {
-      id: Date.now().toString(),
-      name: newCategory.name!,
-      icon: Utensils,
-      image: newCategory.image!,
-    }
-    setCategories([...categories, category])
-    setIsAddCategoryDialogOpen(false)
-  }
+  const { data: dishes = [] as Dish[], isLoading: isFetching } = useQuery<
+    Dish[]
+  >({
+    queryKey: ["dishes"],
+    queryFn: async () => {
+      const dishes = await getAllProduct();
+      if (!dishes) {
+        toast({
+          title: "Failed to fetch dishes",
+          description: "Please try again",
+          variant: "destructive",
+        });
+        return [];
+      }
+      return dishes;
+    },
+  });
 
-  const handleModifyCategory = (updatedCategory: Partial<Category>) => {
-    setCategories(categories.map(c => c.id === editingCategory?.id ? { ...c, ...updatedCategory } : c))
-    setEditingCategory(null)
-  }
+  const filteredDishes = useMemo(() => {
+    return dishes.filter(
+      (d) =>
+        (activeCategory === "all" || d.categoryName === activeCategory) &&
+        d.productName.toLowerCase().includes(debouncedSearchTerm.toLowerCase()),
+    );
+  }, [debouncedSearchTerm, dishes]);
 
-  const handleAddDish = (newDish: Partial<Dish>) => {
-    const dish: Dish = {
-      id: Date.now().toString(),
-      categoryId: newDish.categoryId!,
-      productName: newDish.productName!,
-      price: newDish.price!,
-      imageUrl: newDish.imageUrl!,
-    }
-    setDishes([...dishes, dish])
-    setIsAddDishDialogOpen(false)
-  }
+  const addMutation = useMutation({
+    mutationFn: async (newDish: z.infer<typeof dishFormSchema>) => {
+      setIsLoading(true);
+      if (newDish.image instanceof File) {
+        const formData = new FormData();
+        formData.append("file", newDish.image);
+        const uploadImageUrl = (await uploadImage(formData))?.imageUrl;
+        if (!uploadImageUrl) {
+          throw new Error("Failed to upload image");
+        }
+        const dish = (
+          await addProduct({
+            ...newDish,
+            image: uploadImageUrl,
+          })
+        )?.data;
+        if (!dish) {
+          throw new Error("Failed to add dish");
+        }
+        setIsAddDishDialogOpen(false);
+        setIsLoading(false);
+        return dish;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dishes"] });
+      toast({
+        title: "Success",
+        description: "Dish added successfully",
+        variant: "success",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add dish",
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleModifyDish = (updatedDish: Partial<Dish>) => {
-    setDishes(dishes.map(d => d.id === editingDish?.id ? { ...d, ...updatedDish } : d))
-    setEditingDish(null)
-  }
+  const modifyMutation = useMutation({
+    mutationFn: async (updatedDish: z.infer<typeof dishFormSchema>) => {
+      setIsLoading(true);
+      console.log(updatedDish);
+      if (!editingDish) throw new Error("No dish selected for editing");
+
+      let imageUrl = editingDish.image;
+
+      if (updatedDish.image && updatedDish.image instanceof File) {
+        try {
+          const formData = new FormData();
+          formData.append("file", updatedDish.image);
+          const uploadData = await uploadImage(formData);
+
+          if (!uploadData?.imageUrl) {
+            throw new Error("Failed to upload image");
+          }
+          console.log(uploadData);
+          imageUrl = uploadData.imageUrl;
+        } catch (error) {
+          setIsLoading(false);
+          throw new Error("Image upload failed");
+        }
+      }
+
+      try {
+        const dish = await updateProduct({
+          ...updatedDish,
+          productID: editingDish.productID,
+          image: imageUrl,
+        });
+
+        if (!dish?.data) {
+          throw new Error("Failed to modify dish");
+        }
+
+        setIsLoading(false);
+        setEditingDish(null);
+        console.log(dish.data);
+        return dish.data;
+      } catch (error) {
+        setIsLoading(false);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dishes"] });
+      toast({
+        title: "Success",
+        description: "Dish modified successfully",
+        variant: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to modify dish",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (productID: number) => {
+      const message = await deleteProduct(productID);
+      if (!message) {
+        throw new Error("Failed to delete dish");
+      }
+      return message;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dishes"] });
+      toast({
+        title: "Success",
+        description: "Dish deleted successfully",
+        variant: "success",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete dish",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-8 space-y-12">
-      <div className="text-center space-y-4">
+    <div className="mx-auto w-full max-w-7xl space-y-12 p-8">
+      <div className="space-y-4 text-center">
         <h1 className="text-4xl font-bold text-gray-900">Our Menu</h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">Explore our wide range of delicious dishes and beverages</p>
+        <p className="mx-auto max-w-2xl text-xl text-gray-600">
+          Explore our wide range of delicious dishes and beverages
+        </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 gap-4">
-        <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+      <div className="flex flex-col items-center gap-4 space-y-4 sm:flex-row sm:space-y-0">
+        <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
+          <CategoryButton
+            category={{ categoryID: 0, categoryName: "All", icon: Tally3 }}
+            isActive={activeCategory === "all"}
+            onClick={() => setActiveCategory("all")}
+          />
           {categories.map((category) => (
-            <CategoryButton 
-              key={category.id} 
-              category={category} 
-              isActive={activeCategory === category.id}
-              onClick={() => setActiveCategory(category.id)}
+            <CategoryButton
+              key={category.categoryID}
+              category={category}
+              isActive={activeCategory === category.categoryName}
+              onClick={() => setActiveCategory(category.categoryName)}
             />
           ))}
-          <Dialog open={isAddCategoryDialogOpen} onOpenChange={setIsAddCategoryDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex items-center space-x-2">
-                <Plus className="w-4 h-4" />
-                <span>Add Category</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Category</DialogTitle>
-              </DialogHeader>
-              <CategoryForm onSubmit={handleAddCategory} onCancel={() => setIsAddCategoryDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
         </div>
-        <div className="relative w-full sm:w-auto">
-          <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <Input 
-            type="text" 
-            placeholder="Search dishes..." 
-            className="pl-10 pr-4 py-2 w-full sm:w-64 border-gray-300  focus:ring-[#00B074] focus:border-[#00B074]"
+        <div className="relative flex-1 sm:w-auto">
+          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search dishes..."
+            className="w-64 border-gray-300 py-2 pl-10 pr-4 focus:border-[#00B074] focus:ring-[#00B074] lg:w-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           {searchTerm && (
             <button
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 transform text-gray-400 hover:text-gray-600"
               onClick={() => setSearchTerm("")}
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
-        <Dialog open={isAddDishDialogOpen} onOpenChange={setIsAddDishDialogOpen}>
+        <Dialog
+          open={isAddDishDialogOpen}
+          onOpenChange={setIsAddDishDialogOpen}
+        >
           <DialogTrigger asChild>
-            <Button className="bg-[#00B074] hover:bg-[#00956A] text-white">
-              <Plus className="w-4 h-4 mr-2" />
+            <Button className="bg-[#00B074] text-white hover:bg-[#00956A]">
+              <Plus className="mr-2 h-4 w-4" />
               Add New Dish
             </Button>
           </DialogTrigger>
@@ -352,59 +249,63 @@ export default function ProductMenu() {
             <DialogHeader>
               <DialogTitle>Add New Dish</DialogTitle>
             </DialogHeader>
-            <DishForm categories={categories} onSubmit={handleAddDish} onCancel={() => setIsAddDishDialogOpen(false)} />
+            <DishForm
+              isLoading={isLoading}
+              categories={categories}
+              onSubmit={addMutation.mutate}
+              onCancel={() => setIsAddDishDialogOpen(false)}
+            />
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredDishes.map((dish) => (
-          <DishCard 
-            key={dish.id} 
-            dish={dish} 
-            category={categories.find(c => c.id === dish.categoryId)!}
+          <DishCardMenu
+            key={dish.productID}
+            dish={dish}
             onModify={() => setEditingDish(dish)}
+            onDelete={() => deleteMutation.mutate(dish.productID)}
           />
         ))}
       </div>
-
-      {filteredDishes.length === 0 && (
-        <div className="text-center py-12">
-          <h3 className="text-2xl font-semibold text-gray-700 mb-2">No dishes found</h3>
-          <p className="text-gray-500">Try adjusting your search or category filter.</p>
+      {isFetching ? (
+        <div className="flex justify-center items-center">
+				<svg aria-hidden="true" className="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+						<path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+				</svg>
+		</div>
+      ) : filteredDishes.length === 0 ? (
+        <div className="py-12 text-center">
+          <h3 className="mb-2 text-2xl font-semibold text-gray-700">
+            No dishes found
+          </h3>
+          <p className="text-gray-500">
+            Try adjusting your search or category filter.
+          </p>
         </div>
-      )}
+      ) : null}
 
-      <Dialog open={!!editingCategory} onOpenChange={(open) => !open && setEditingCategory(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Modify Category</DialogTitle>
-          </DialogHeader>
-          {editingCategory && (
-            <CategoryForm 
-              category={editingCategory} 
-              onSubmit={handleModifyCategory} 
-              onCancel={() => setEditingCategory(null)} 
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!editingDish} onOpenChange={(open) => !open && setEditingDish(null)}>
+      <Dialog
+        open={!!editingDish}
+        onOpenChange={(open) => !open && setEditingDish(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Modify Dish</DialogTitle>
           </DialogHeader>
           {editingDish && (
-            <DishForm 
-              dish={editingDish} 
-              categories={categories} 
-              onSubmit={handleModifyDish} 
-              onCancel={() => setEditingDish(null)} 
+            <DishForm
+              isLoading={isLoading}
+              dish={editingDish}
+              categories={categories}
+              onSubmit={modifyMutation.mutate}
+              onCancel={() => setEditingDish(null)}
             />
           )}
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
