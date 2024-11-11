@@ -49,7 +49,7 @@ export function PieChartComponent({ from, to }: PieChartComponentProps) {
         <div className="shadow-black-medium flex flex-col justify-between gap-2 rounded-lg bg-white p-4">
             <ComponentHeader
                 title="Pie Chart"
-                description="See total revenue and orders for the this period"
+                description="See total and orders for the this period"
             />
             <div className="flex w-full justify-center">
                     <PieChartSub
