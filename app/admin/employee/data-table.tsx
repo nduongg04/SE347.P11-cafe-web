@@ -1,5 +1,5 @@
 "use client";
-import {url, token} from '@/constants';
+import { getCookies } from '@/lib/action';
 import {
   Dialog,
   DialogContent,
@@ -110,25 +110,32 @@ export function DataTable<TData, TValue>({
       toast.error('Password must be at least 5 characters');
       return;
     }
-    const response = await fetch(`${url}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ staffName, username, password, isAdmin })
-    });
-    if (!response.ok) {
-      toast.error('Failed to add staff');
-      return;
+    const cookies = await getCookies('refreshToken');
+    const token = cookies?.value;
+    const url = process.env.BASE_URL;
+    try{
+      const response = await fetch(`${url}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ staffName, username, password, isAdmin })
+      });
+      if (!response.ok) {
+        toast.error('Failed to add staff');
+        return;
+      }
+      const result = await response.json();
+      toast.success('Staff added successfully');
+      setIsAdmin(true);
+      setStaffName('');
+      setUsername('');
+      setPassword('');
+      onAdd(result.data);
+    }catch(e){
+      toast.error('Failed to add staff: '+ e);
     }
-    const result = await response.json();
-    toast.success('Staff added successfully');
-    setIsAdmin(true);
-    setStaffName('');
-    setUsername('');
-    setPassword('');
-    onAdd(result.data);
   }
   const deleteStaff = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
@@ -141,6 +148,9 @@ export function DataTable<TData, TValue>({
       return row.original;
     
     });
+    const cookies = await getCookies('refreshToken');
+    const token = cookies?.value;
+    const url = process.env.BASE_URL;
     try{
       await Promise.all(staffs.map(async (staff) => {
         const response = await fetch(`${url}/staff/delete/${staff.staffId}`, {

@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import {url, token} from '@/constants';
+import { getCookies } from "@/lib/action";
 import {toast} from "sonner";
 import { ColumnDef } from "@tanstack/react-table"
 import { Pencil, ArrowUpDown } from "lucide-react"
@@ -104,6 +104,9 @@ export const columns:(
             return;
           }
           try{
+            const cookies = await getCookies('refreshToken');
+            const token = cookies?.value;
+            const url = process.env.BASE_URL;
             const response = await fetch(`${url}/customer/update/${customer.customerId}`, {
               method: "PUT",
               headers: {
@@ -277,6 +280,9 @@ export const customerTypeColumns: (
           return;
         }
         try{
+          const cookies = await getCookies('refreshToken');
+          const token = cookies?.value;
+          const url = process.env.BASE_URL;
           const response = await fetch(`${url}/customertype/update/${row.original.customerTypeId}`, {
             method: "PUT",
             headers: {

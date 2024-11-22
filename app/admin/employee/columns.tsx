@@ -1,7 +1,7 @@
 "use client";
 
+import { getCookies } from "@/lib/action";
 import * as React from "react";
-import {url, token} from '@/constants';
 import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table"
 import { Pencil, ArrowUpDown } from "lucide-react"
@@ -69,6 +69,9 @@ export const columns: (
             toast.error('Full name and username must be at least 10 characters');
             return;
           }
+          const cookies = await getCookies('refreshToken');
+          const token = cookies?.value;
+          const url = process.env.BASE_URL;
           if (staffName !== staff.staffName || username !== staff.username) {
             try {
               const response = await fetch(`${url}/staff/update/${row.original.staffId}`, {
