@@ -3,6 +3,10 @@
 import Profile from "@/components/admin/Profile";
 import { staff } from "@/constants";
 
+import { AreaChartComponent } from "@/components/admin/AreaChartComponent";
+import Badge from "@/components/admin/Badge";
+import { PieChartComponent } from "@/components/admin/PieChartComponent";
+import TopDishes from "@/components/admin/TopDishes";
 import { Calendar } from "@/components/ui/calendar";
 import {
     Popover,
@@ -13,10 +17,6 @@ import { formatDate } from "date-fns";
 import Image from "next/image";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
-import Badge from "@/components/admin/Badge";
-import { PieChartComponent } from "@/components/admin/PieChartComponent";
-import { AreaChartComponent } from "@/components/admin/AreaChartComponent";
-import { DishCard } from "@/components/admin/DishCard";
 
 const Analytics = () => {
     const [selectedDate, setSelectedDate] = useState<DateRange | undefined>({
@@ -33,11 +33,6 @@ const Analytics = () => {
             iconHref: "/assets/icons/revenue.svg",
             value: "$128",
             title: "Total Revenue",
-        },
-        {
-            iconHref: "/assets/icons/star.svg",
-            value: "4.8",
-            title: "Average Rating",
         },
     ]);
     return (
@@ -112,7 +107,7 @@ const Analytics = () => {
                     />
                 ))}
             </div>
-            <div className="grid grid-flow-col grid-cols-3 gap-16">
+            <div className="grid grid-flow-col grid-cols-3 justify-between gap-20">
                 <PieChartComponent
                     from={
                         selectedDate?.from ||
@@ -128,7 +123,7 @@ const Analytics = () => {
                     to={selectedDate?.to || new Date()}
                 />
             </div>
-			<DishCard />
+            <TopDishes />
         </div>
     );
 };
