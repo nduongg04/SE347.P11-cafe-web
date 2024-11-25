@@ -9,7 +9,9 @@ type Props = {}
 export default function OrderPage({}: Props) {
  const [listPrdBill,setListPrdBill]= React.useState<PrdBill[]>([])
   return (
-    <div className='flex'>
+    <div>
+      
+ <div className='flex overflow-hidden'>
       <div className='basis-3/6'>
        
      <MenuOrder listPrdBill={listPrdBill} setListPrdBill={setListPrdBill} />
@@ -19,5 +21,7 @@ export default function OrderPage({}: Props) {
         <BillTable data={listPrdBill} setData={setListPrdBill}></BillTable>
       </div>
     </div>
+    </div>
+   
   )
 }

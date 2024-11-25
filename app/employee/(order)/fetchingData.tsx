@@ -1,25 +1,130 @@
 import { Product } from "./menuOrder";
 import { Category } from "./menuOrder";
-export const categories: Category[] = [
-    { CategoryID: 1, CategoryName: 'Trà sữa' },
-    { CategoryID: 2, CategoryName: 'Soda' },
-    { CategoryID: 3, CategoryName: 'Khác' },
-];
+import { getCookies } from "@/lib/action";
+import { toast } from "sonner";
+import { Customer } from "../customer/columns";
 
-export const products: Product[] = [
-    { ProductId: 1, ProductName: 'Trà sữa dừa trứng nướng fulltopping thạch trân châu đen abcdda ađa ad sds sd', Price: 10000, Image: 'https://beeteacoffee.vn/wp-content/uploads/2023/09/Tra-Sua-Bee-Truyen-Thong.png', IsSoldOut: false, CategoryID: 1 },
-    { ProductId: 2, ProductName: 'Trà sữa thái xanh', Price: 15000, Image: 'https://beeteacoffee.vn/wp-content/uploads/2023/09/Tra-Sua-Bee-Truyen-Thong.png', IsSoldOut: true, CategoryID: 1 },
-    { ProductId: 3, ProductName: 'Soda bạc hà', Price: 20000, Image: 'https://beeteacoffee.vn/wp-content/uploads/2023/09/Tra-Sua-Bee-Truyen-Thong.png', IsSoldOut: false, CategoryID: 2 },
-    { ProductId: 4, ProductName: 'Product 4', Price: 25000, Image: 'https://beeteacoffee.vn/wp-content/uploads/2023/09/Tra-Sua-Bee-Truyen-Thong.png', IsSoldOut: false, CategoryID: 3 },
-    { ProductId: 5, ProductName: 'Product 5', Price: 30000, Image: 'https://beeteacoffee.vn/wp-content/uploads/2023/09/Tra-Sua-Bee-Truyen-Thong.png', IsSoldOut: false, CategoryID: 3 },
-    { ProductId: 6, ProductName: 'Product 6', Price: 35000, Image: 'https://beeteacoffee.vn/wp-content/uploads/2023/09/Tra-Sua-Bee-Truyen-Thong.png', IsSoldOut: false, CategoryID: 3 },
-    { ProductId: 7, ProductName: 'Product 7', Price: 40000, Image: 'https://beeteacoffee.vn/wp-content/uploads/2023/09/Tra-Sua-Bee-Truyen-Thong.png', IsSoldOut: false, CategoryID: 3 },
-    { ProductId: 8, ProductName: 'Product 8', Price: 45000, Image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLro0x-F5aknipUJxYv9cE3eOuctbuk6-Ymw&s', IsSoldOut: true, CategoryID: 2 },
-    { ProductId: 9, ProductName: 'Product 9', Price: 50000, Image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLro0x-F5aknipUJxYv9cE3eOuctbuk6-Ymw&s', IsSoldOut: false, CategoryID: 2 },
-    { ProductId: 10, ProductName: 'Product 10', Price: 55000, Image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLro0x-F5aknipUJxYv9cE3eOuctbuk6-Ymw&s', IsSoldOut: false, CategoryID: 1 },
-    { ProductId: 11, ProductName: 'Product 11', Price: 60000, Image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLro0x-F5aknipUJxYv9cE3eOuctbuk6-Ymw&s', IsSoldOut: false, CategoryID: 1 },
-    { ProductId: 12, ProductName: 'Product 12', Price: 65000, Image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLro0x-F5aknipUJxYv9cE3eOuctbuk6-Ymw&s', IsSoldOut: true, CategoryID: 2 },
-    { ProductId: 13, ProductName: 'Product 13', Price: 70000, Image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLro0x-F5aknipUJxYv9cE3eOuctbuk6-Ymw&s', IsSoldOut: false, CategoryID: 3 },
-    { ProductId: 14, ProductName: 'Product 14', Price: 75000, Image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLro0x-F5aknipUJxYv9cE3eOuctbuk6-Ymw&s', IsSoldOut: true, CategoryID: 1 },
-    { ProductId: 15, ProductName: 'Product 15', Price: 80000, Image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLro0x-F5aknipUJxYv9cE3eOuctbuk6-Ymw&s', IsSoldOut: false, CategoryID: 1 },
-];
+
+export async function getCategoryData(): Promise<Category[]> {
+    const cookies = await getCookies("refreshToken");
+    const token = cookies?.value;
+    const url = process.env.BASE_URL;
+    try{
+        const response = await fetch(`${url}/category/getall`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            toast.error("Failed to fetch data: " + data.message);
+            
+        }
+        const categories: Category[] = data.map((category: any) => ({
+            CategoryID: category.categoryID,
+            CategoryName: category.categoryName,
+        }));
+        return categories;
+    }catch(e){
+        toast.error("Failed to fetch data: " + e);
+        return [];
+    }
+}
+
+export async function getProductData(): Promise<Product[]> {
+    const cookies = await getCookies("refreshToken");
+    const token = cookies?.value;
+    const url = process.env.BASE_URL;
+    try{
+        const response = await fetch(`${url}/product/getall`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            toast.error("Failed to fetch data: " + data.message);
+            
+        }
+        const products: Product[] = data.map((product: any) => ({
+            ProductId: product.productID,
+            ProductName: product.productName,
+            Price: product.price,
+            Image: product.image,
+            IsSoldOut: product.isSoldOut,
+            CategoryName: product.categoryName,
+        }));
+        return products;
+    }catch(e){
+        toast.error("Failed to fetch data: " + e);
+        return [];
+    }
+}
+
+export async function getCustomerData(): Promise<Customer[]> {
+    const cookies = await getCookies("refreshToken");
+    const token = cookies?.value;
+    const url = process.env.BASE_URL;
+    try{
+        const response = await fetch(`${url}/customer/getall`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            toast.error("Failed to fetch data: " + data.message);
+            
+        }
+        const customers: Customer[] = data.map((customer: any) => ({
+            customerId: customer.customerID,
+            customerName: customer.customerName,
+            email: customer.email,
+            phoneNumber: customer.phoneNumber,
+            revenue: customer.revenue,
+            customerType: customer.customerType==null? "Visting customer" : customer.customerType,
+        }));
+        return customers;
+    }catch(e){
+        toast.error("Failed to fetch data: " + e);
+        return [];
+    }
+}
+
+export async function searchVoucherByCode(voucherCode:string): Promise<VoucherApi|null> {
+    const cookies = await getCookies("refreshToken");
+    const token = cookies?.value;
+    const url = process.env.BASE_URL;
+    try{
+        const response = await fetch(`${url}/voucher/getbycode?code=${voucherCode}`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            toast.error("Failed to fetch data: " + data.message);
+            return null;
+        }
+        const voucher:VoucherApi={
+          voucherID:data.voucherID,
+          voucherCode:data.voucherCode,
+          voucherValue:data.voucherValue,
+          voucherType:{
+            voucherTypeID:data.voucherType.voucherTypeId,
+            typeName:data.voucherType.typeName
+          },
+          maxApply:data.maxApply,
+          createdDate:data.createdDate,
+          expiredDate:data.expiredDate
+        }
+        return voucher;
+    }catch(e){
+        toast.error("Failed to fetch data: " + e);
+        return null;
+    }
+}
