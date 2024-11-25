@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -17,9 +17,10 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { products, categories } from './fetchingData'
+import { getProductData, getCategoryData } from './fetchingData'
 
 import { ScrollArea } from '@/components/ui/scroll-area'
+import Loading from 'react-loading'
 
 export type Product = {
     ProductId: number,
@@ -27,7 +28,7 @@ export type Product = {
     Price: number,
     Image: string,
     IsSoldOut: boolean,
-    CategoryID: number
+    CategoryName: string
 }
 export type Category = {
     CategoryID: number,
@@ -46,9 +47,24 @@ type Props = {
 }
 export default function MenuOrder({ listPrdBill, setListPrdBill }: Props) {
     const [searchPrd, setSearchPrd] = React.useState('');
+    const [categories, setCategories] = React.useState<Category[]>([])
+    const [products, setProducts] = React.useState<Product[]>([])
     const [open, setOpen] = React.useState(false)
     const [typeCate, setTypeCate] = React.useState("")
     const [listPrd, setListPrd] = React.useState<Product[]>(products)
+    const [loading,setLoading]= useState(false)
+    useEffect(() => {
+        async function fetchData() {
+            setLoading(true)
+            const categories = await getCategoryData();
+            const products = await getProductData();
+            setCategories(categories);
+            setProducts(products);
+            setListPrd(products);
+            setLoading(false)
+        }
+        fetchData();
+    }, [])
     const formatted = (amount: number) => new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "VND",
@@ -100,21 +116,20 @@ export default function MenuOrder({ listPrdBill, setListPrdBill }: Props) {
 
     }
     const handleChooseCategory = (id: string) => {
-        console.log(id)
         if (!id || id === "" || id === 'All') {
             setListPrd(products);
             return;
         } else {
             const filteredProducts = products.filter((prd) =>
-                String(prd.CategoryID) == id
+                String(prd.CategoryName) == id
             );
             setListPrd(filteredProducts); // Cập nhật danh sách với sản phẩm đã lọc
         }
     }
 
     return (
-        <div className='bg-white px-2 py-2 mr-2'>
-            <div className='flex justify-between'>
+        <div className='bg-white px-2 py-2 mr-2 h-[98%] mt-2 rounded-lg shadow-sm'>
+            <div className='flex justify-between px-3 mt-2'>
                 <Input
                     placeholder="Search by name"
                     value={searchPrd}
@@ -129,7 +144,7 @@ export default function MenuOrder({ listPrdBill, setListPrdBill }: Props) {
                             className="w-[180px] justify-between"
                         >
                             {typeCate
-                                ? categories.find((category) => String(category.CategoryID) === typeCate)?.CategoryName
+                                ? categories.find((category) => String(category.CategoryName) === typeCate)?.CategoryName
                                 : "All"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
@@ -143,7 +158,7 @@ export default function MenuOrder({ listPrdBill, setListPrdBill }: Props) {
                                     {categories.map((category) => (
                                         <CommandItem
                                             key={category.CategoryName}
-                                            value={String(category.CategoryID)}
+                                            value={String(category.CategoryName)}
                                             onSelect={(currentValue) => {
                                                 if (currentValue === typeCate) {
                                                     handleChooseCategory("All")
@@ -160,7 +175,7 @@ export default function MenuOrder({ listPrdBill, setListPrdBill }: Props) {
                                             <Check
                                                 className={cn(
                                                     "mr-2 h-4 w-4",
-                                                    typeCate === String(category.CategoryID) ? "opacity-100" : "opacity-0"
+                                                    typeCate === String(category.CategoryName) ? "opacity-100" : "opacity-0"
                                                 )}
                                             />
                                             {category.CategoryName}
@@ -172,8 +187,19 @@ export default function MenuOrder({ listPrdBill, setListPrdBill }: Props) {
                     </PopoverContent>
                 </Popover>
             </div>
-            <ScrollArea className="mt-3 h-[650px] pb-1">
-                <div className="grid grid-cols-3 grid-rows-3 gap-4 p-4 h-full">
+            {loading?
+            <div className='flex justify-center items-center h-[660px]'>
+            <Loading
+             type="spin"
+             color="gray"
+             height={30}
+             width={30}
+             className="ml-5"
+           />
+            </div>
+            :
+            <ScrollArea className="mt-3 h-[645px] pb-1">
+                <div className="grid grid-cols-3 grid-rows-3 gap-4 px-4 py-2 h-full">
                     {listPrd.map((prd) => (
                         prd.IsSoldOut ?
                             (<div
@@ -204,6 +230,7 @@ export default function MenuOrder({ listPrdBill, setListPrdBill }: Props) {
                     ))}
                 </div>
             </ScrollArea>
+}
            
 
         </div>

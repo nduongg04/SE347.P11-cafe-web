@@ -1,7 +1,7 @@
 "use client";
 import {toast} from "sonner";
 import { Customer } from "./columns";
-import {url, token} from "@/constants";
+import { getCookies } from "@/lib/action";
 import {
   Dialog,
   DialogContent,
@@ -48,13 +48,14 @@ import {
 import { TriangleAlert } from "lucide-react"
 import * as React from "react"
 import { set } from "date-fns";
+import { CustomerType } from "./columns";
 interface CustomerData {
     customerId: string;
     customerName: string;
     phoneNumber: string;
     email: string;
     revenue: number;
-    customerType: string;
+    customerType: CustomerType | null;
 }
 
 interface DataTableProps<TData extends CustomerData, TValue> {
@@ -92,41 +93,46 @@ export function DataTable<TData, TValue>({
       toast.error('Invalid email address');
       return;
     }
-
-    const response = await fetch(`${url}/customer/create`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const cookies = await getCookies('refreshToken');
+    const token = cookies?.value;
+    const url = process.env.BASE_URL;
+    try{
+      const response = await fetch(`${url}/customer/create`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerName: customerName,
+          phoneNumber: phoneNumber,
+          email: email,
+          revenue: 0,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message);
+      } else {
+        toast.success("Customer added successfully");
+      }
+      setCustomerName("");
+      setPhoneNumber("");
+      setEmail("");
+      onAdd?.({
+        email: email,
+        customerId: data.data.customerID,
         customerName: customerName,
         phoneNumber: phoneNumber,
-        email: email,
         revenue: 0,
-      }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      toast.error("Failed to add customer: " + data.message);
-      return;
-    } else {
-      toast.success("Customer added successfully");
+        customerType:null,
+      });
+    }catch(e){
+      toast.error("Failed to add customer: " + e);
     }
-    setCustomerName("");
-    setPhoneNumber("");
-    setEmail("");
-    onAdd?.({
-      email: email,
-      customerId: data.data.customerID,
-      customerName: customerName,
-      phoneNumber: phoneNumber,
-      revenue: 0,
-      customerType: "Visting customer",
-    });
 
   };
- 
+  
   const table = useReactTable({
     data,
     columns,
@@ -159,7 +165,7 @@ export function DataTable<TData, TValue>({
           <Button variant="secondary" className="mx-4">
             Download all
           </Button>
-        
+         
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="green" className="mx-4">Add customer</Button>
@@ -261,11 +267,11 @@ export function DataTable<TData, TValue>({
       </div>
 
       <div className="flex">
-        {/* <div className="flex-1 text-sm text-muted-foreground mt-2">
+        <div className="flex-1 text-sm text-muted-foreground mt-2">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div> */}
-        <div className="flex items-center mx-auto space-x-2 py-4">
+        </div>
+        <div className="flex items-center justify-end space-x-2 py-4">
           <Button
             variant="outline"
             size="sm"
