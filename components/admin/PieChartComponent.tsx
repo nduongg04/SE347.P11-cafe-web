@@ -17,34 +17,7 @@ export function PieChartComponent({ from, to }: PieChartComponentProps) {
         labelText: number;
         dataKey: string;
         nameKey: string;
-    }[] = [
-        {
-            chartData: [
-                { time: "This period", revenue: 80, fill: "#FF5B5B" },
-                {
-                    time: "Remaining",
-                    revenue: 20,
-                    fill: "rgba(255 91 91 / 0.2)",
-                },
-            ],
-            chartConfig: {
-                revenue: {
-                    label: "Revenue",
-                },
-                remaining: {
-                    label: "Remaining",
-                    color: "rgba(255 91 91 / 0.2)",
-                },
-                thisPeriod: {
-                    label: "This period",
-                    color: "#FF5B5B",
-                },
-            },
-            labelText: 80,
-            footer: "Revenue",
-            dataKey: "revenue",
-            nameKey: "time",
-        },
+    }= 
         {
             chartData: [
                 { time: "This period", orders: 19, fill: "#2D9CDB" },
@@ -71,26 +44,22 @@ export function PieChartComponent({ from, to }: PieChartComponentProps) {
             footer: "Orders",
             dataKey: "orders",
             nameKey: "time",
-        },
-    ];
+        }
     return (
         <div className="shadow-black-medium flex flex-col justify-between gap-2 rounded-lg bg-white p-4">
             <ComponentHeader
                 title="Pie Chart"
-                description="See total revenue and orders for the this period"
+                description="See total and orders for the this period"
             />
-            <div className="flex">
-                {chartInfos.map((chartInfo, index) => (
+            <div className="flex w-full justify-center">
                     <PieChartSub
-                        key={index}
-                        labelText={`${chartInfo.labelText.toLocaleString()}%`}
-                        footer={chartInfo.footer}
-                        chartData={chartInfo.chartData}
-                        chartConfig={chartInfo.chartConfig}
-                        dataKey={chartInfo.dataKey}
-                        nameKey={chartInfo.nameKey}
-                    />
-                ))}
+                    labelText={`${chartInfos.labelText.toLocaleString()}%`}
+                    footer={chartInfos.footer}
+                    chartData={chartInfos.chartData}
+                    chartConfig={chartInfos.chartConfig}
+                    dataKey={chartInfos.dataKey}
+                    nameKey={chartInfos.nameKey}
+                />
             </div>
         </div>
     );
