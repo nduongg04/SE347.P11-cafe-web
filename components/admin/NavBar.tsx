@@ -15,7 +15,8 @@ type IconNameType =
   | "order"
   | "employee"
   | "bill"
-  | "analytics";
+  | "analytics"
+  | "table";
 
 const NavBar = () => {
   //   const [prevPath, setPrevPath] = useState("");
@@ -34,6 +35,11 @@ const NavBar = () => {
       label: "Menu",
       href: "/admin/menu",
       icon: "menu",
+    },
+    {
+      label: "Table",
+      href: "/admin/table",
+      icon: "table",
     },
     {
       label: "Voucher",
@@ -64,7 +70,7 @@ const NavBar = () => {
       label: "Analytics",
       href: "/admin/analytics",
       icon: "analytics",
-    },
+    }, 
   ];
 
     const getIconComponent = (iconName: IconNameType, className?: string) => {
