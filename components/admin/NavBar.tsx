@@ -17,7 +17,8 @@ type IconNameType =
   | "order"
   | "employee"
   | "bill"
-  | "analytics";
+  | "analytics"
+  | "table";
 
 interface NavBarProps {
   isOpen: boolean;
@@ -40,6 +41,11 @@ const NavBar = ({ isOpen, onClose }: NavBarProps) => {
       label: "Menu",
       href: "/admin/menu",
       icon: "menu",
+    },
+    {
+      label: "Table",
+      href: "/admin/table",
+      icon: "table",
     },
     {
       label: "Voucher",
@@ -70,7 +76,7 @@ const NavBar = ({ isOpen, onClose }: NavBarProps) => {
       label: "Analytics",
       href: "/admin/analytics",
       icon: "analytics",
-    },
+    }, 
   ];
 
   const getIconComponent = (iconName: IconNameType, className?: string) => {
