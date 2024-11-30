@@ -50,7 +50,7 @@ export function AreaChartComponent({ from, to }: AreaChartComponentProps) {
         <Card className="col-span-2 border-none rounded-lg shadow-black-medium">
             <CardHeader>
                 <ComponentHeader
-                    title="Order Chart"
+                    title="Line Chart"
                     description="See orders for the this period"
                 />
             </CardHeader>
