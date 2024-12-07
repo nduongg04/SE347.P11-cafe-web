@@ -3,6 +3,10 @@
 import Profile from "@/components/admin/Profile";
 import { staff } from "@/constants";
 
+import { AreaChartComponent } from "@/components/admin/AreaChartComponent";
+import Badge from "@/components/admin/Badge";
+import { PieChartComponent } from "@/components/admin/PieChartComponent";
+import TopDishes from "@/components/admin/TopDishes";
 import { Calendar } from "@/components/ui/calendar";
 import {
     Popover,
@@ -13,7 +17,6 @@ import { formatDate } from "date-fns";
 import Image from "next/image";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
-import Badge from "@/components/admin/Badge";
 
 const Analytics = () => {
     const [selectedDate, setSelectedDate] = useState<DateRange | undefined>({
@@ -31,16 +34,11 @@ const Analytics = () => {
             value: "$128",
             title: "Total Revenue",
         },
-        {
-            iconHref: "/assets/icons/star.svg",
-            value: "4.8",
-            title: "Average Rating",
-        },
     ]);
     return (
         <div className="font-barlow flex flex-1 flex-col gap-10 p-5">
             <div className="flex items-center justify-between gap-10">
-                <div className="flex flex-1 items-center justify-between gap-10">
+                <div className="flex flex-1 flex-wrap items-center justify-between gap-10">
                     <div className="flex flex-col gap-1">
                         <h1 className="text-xl font-semibold">Analytics</h1>
                         <p className="text-sm text-gray-500">
@@ -50,7 +48,7 @@ const Analytics = () => {
                     </div>
                     <Popover>
                         <PopoverTrigger>
-                            <div className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 shadow-[0_4px_4px_0_rgba(0,0,0,0.04)]">
+                            <div className="shadow-black-medium flex items-center gap-2 rounded-lg bg-white px-4 py-2">
                                 <div className="h-full rounded-lg bg-[#2D9CDB]/15 p-1">
                                     <Image
                                         src="/assets/icons/calendar.svg"
@@ -99,7 +97,7 @@ const Analytics = () => {
                 <div className="h-10 w-px bg-bright-gray" />
                 <Profile />
             </div>
-            <div className="flex justify-between gap-20">
+            <div className="flex flex-wrap justify-between gap-20">
                 {badgeInfos.map((badgeInfo, index) => (
                     <Badge
                         key={index}
@@ -109,6 +107,23 @@ const Analytics = () => {
                     />
                 ))}
             </div>
+            <div className="grid grid-flow-col grid-cols-3 justify-between gap-20">
+                <PieChartComponent
+                    from={
+                        selectedDate?.from ||
+                        new Date(new Date().setDate(new Date().getDate() - 7))
+                    }
+                    to={selectedDate?.to || new Date()}
+                />
+                <AreaChartComponent
+                    from={
+                        selectedDate?.from ||
+                        new Date(new Date().setDate(new Date().getDate() - 7))
+                    }
+                    to={selectedDate?.to || new Date()}
+                />
+            </div>
+            <TopDishes />
         </div>
     );
 };
