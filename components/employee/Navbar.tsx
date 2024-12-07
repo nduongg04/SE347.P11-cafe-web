@@ -7,7 +7,7 @@ import { Icons } from "../Icons";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { resetCookies } from "@/lib/action";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 type IconNameType =
   | "dashboard"
