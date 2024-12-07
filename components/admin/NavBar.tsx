@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Icons } from "../Icons";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { resetCookies } from "@/lib/action";
 
 type IconNameType =
   | "dashboard"
@@ -26,6 +27,7 @@ interface NavBarProps {
 
 const NavBar = ({ isOpen, onClose }: NavBarProps) => {
   const pathname = usePathname();
+  const router = useRouter();
   const routes: {
     label: string;
     href: string;
@@ -77,7 +79,10 @@ const NavBar = ({ isOpen, onClose }: NavBarProps) => {
     const IconComponent = Icons[iconName as keyof typeof Icons];
     return IconComponent ? <IconComponent className={className} /> : null;
   };
-
+  const onLogout = async () => {
+    await resetCookies();
+    router.replace("/login");
+  };
   return (
     <div
       className={cn(
@@ -109,7 +114,7 @@ const NavBar = ({ isOpen, onClose }: NavBarProps) => {
       </div>
       <div className="relative flex flex-1 flex-col overflow-y-auto">
         <div
-          className="flex items-center absolute left-0 h-12 w-full transition-all duration-300"
+          className="absolute left-0 flex h-12 w-full items-center transition-all duration-300"
           style={{
             transform: `translateY(${
               routes.findIndex((route) => route.href === pathname) * 48
@@ -120,24 +125,32 @@ const NavBar = ({ isOpen, onClose }: NavBarProps) => {
           <div className="absolute inset-y-0 left-1 right-0 rounded-r-md bg-dark-green/15" />
         </div>
 
-        {routes.map((route) => (
-          <Link
-            key={route.href}
-            href={route.href}
-            className={cn(
-              "relative z-10 flex items-center gap-2 px-8 py-3 transition-all duration-100",
-              pathname === route.href
-                ? "font-semibold text-dark-green"
-                : "text-black-purple hover:bg-gray-100",
-            )}
-            onClick={onClose}
-          >
-            {getIconComponent(route.icon, "transition-colors duration-300")}
-            <span className="text-base font-medium transition-colors duration-300">
-              {route.label}
-            </span>
-          </Link>
-        ))}
+        <div className="flex flex-1 flex-col">
+          {routes.map((route) => (
+            <Link
+              key={route.href}
+              href={route.href}
+              className={cn(
+                "relative z-10 flex items-center gap-2 px-8 py-3 transition-all duration-100",
+                pathname === route.href
+                  ? "font-semibold text-dark-green"
+                  : "text-black-purple hover:bg-gray-100",
+              )}
+              onClick={onClose}
+            >
+              {getIconComponent(route.icon, "transition-colors duration-300")}
+              <span className="text-base font-medium transition-colors duration-300">
+                {route.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+        <button
+          className="mx-6 mb-6 rounded-md bg-[#FF6767] py-2 font-bold text-white shadow-md"
+          onClick={onLogout}
+        >
+          Logout
+        </button>
       </div>
     </div>
   );
