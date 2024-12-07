@@ -26,7 +26,7 @@ import * as z from "zod";
 export const floorFormSchema = z.object({
   floorNumber: z.number().min(0, {
     message: "Must be a positive number.",
-  })
+  }),
 });
 
 export default function FloorForm({
@@ -45,24 +45,23 @@ export default function FloorForm({
   const form = useForm<z.infer<typeof floorFormSchema>>({
     resolver: zodResolver(floorFormSchema),
     defaultValues: {
-      floorNumber:floor?.floorNumber ?? 2
+      floorNumber: floor?.floorNumber ?? 2,
     },
   });
 
   function onSubmitForm(values: z.infer<typeof floorFormSchema>) {
     let isExist = false;
     floors?.forEach((f) => {
-        if (f.floorNumber === values.floorNumber) {
-            form.setError("floorNumber", {
-            type: "manual",
-            message: "Floor number already exists",
-            });
-            isExist = true;
-        }
-        return;
+      if (f.floorNumber === values.floorNumber) {
+        form.setError("floorNumber", {
+          type: "manual",
+          message: "Floor number already exists",
+        });
+        isExist = true;
+      }
+      return;
     });
-    if(!isExist)
-        onSubmit(values);
+    if (!isExist) onSubmit(values);
   }
 
   return (
@@ -76,14 +75,14 @@ export default function FloorForm({
             <FormItem>
               <FormLabel>Floor number</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="Enter floor number" 
-                  type="number" 
-                  {...field} 
+                <Input
+                  placeholder="Enter floor number"
+                  type="number"
+                  {...field}
                   onChange={(e) => {
                     form.setValue("floorNumber", parseInt(e.target.value));
                   }}
-                  />
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
