@@ -22,3 +22,10 @@ export async function getCookies(key: string) {
 export async function navigate(url: string) {
   redirect(url);
 }
+
+export async function resetCookies() {
+  const cookieStorage = cookies();
+  cookieStorage.delete("accessToken");
+  cookieStorage.delete("refreshToken");
+  cookieStorage.delete("user");
+}
