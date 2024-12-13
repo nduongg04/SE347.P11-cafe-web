@@ -35,7 +35,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getCustomerData } from "../customer/fetchingData";
 import { Customer } from "../customer/columns";
-import { searchVoucherByCode } from "./fetchingData";
+import { searchVoucherByCode, updateTableStatus } from "./fetchingData";
 import { toast } from "sonner";
 import Loading from "react-loading";
 import { getCookies } from "@/lib/action";
@@ -46,8 +46,11 @@ import html2canvas from "html2canvas";
 type Props = {
   data: PrdBill[];
   setData: React.Dispatch<React.SetStateAction<PrdBill[]>>;
+  tableOrder: number | null;
+  updateStatus: (tableId:number,status:string) => void;
+  resetData: () => void;
 };
-export default function BillTable({ data, setData }: Props) {
+export default function BillTable({ data, setData, tableOrder,updateStatus,resetData }: Props) {
   const url = process.env.BASE_URL;
   const [user, setUser] = useState<User | null>(null);
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -61,7 +64,9 @@ export default function BillTable({ data, setData }: Props) {
   const [idBill, setIdBill] = useState<number>(0);
   const [payType, setPayType] = useState<string>("Chuyển khoản");
   const [openBill, setOpenBill] = useState<boolean>(false);
-  const [loading,setLoading]= useState(false)
+  const [openPayType, setOpenPayType] = useState<boolean>(false);
+  const [loading,setLoading]= useState(false);
+  const [finishedBill,setFinishedBill]= useState(false);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -93,6 +98,13 @@ export default function BillTable({ data, setData }: Props) {
     }
     setTotalBill(totalBill);
   }, [customer, voucher, data]);
+  useEffect(() => {
+    if(finishedBill && !openBill){
+      resetData();
+      resetBill();
+      setFinishedBill(false);
+    }
+  }, [finishedBill,openBill]);
   const resetBill = () => {
     setData([]);
     setCustomer(null);
@@ -100,7 +112,7 @@ export default function BillTable({ data, setData }: Props) {
     setSearchCustomer("");
     setSearchVoucher("");
   };
-  const handleGeneratePDF = async () => {
+  const handleGenerateImg = async () => {
     const content = document.querySelector(".dialog-content-to-pdf");
     if (content instanceof HTMLElement) {
       try {
@@ -125,7 +137,15 @@ export default function BillTable({ data, setData }: Props) {
     } else {
       console.error("Content không tồn tại.");
     }
+    resetData();
   };
+  const handleUpdateTableStatus = async (tableId:number,status:string) => {
+    const result = await updateTableStatus(tableId,status);
+    if(result){
+      updateStatus(tableId,status);
+      toast.success("Update table status successfully");
+    }
+  }   
   const addBill = async (payType: number) => {
     if (payType == 1) {
       setPayType("Chuyển khoản");
@@ -133,6 +153,7 @@ export default function BillTable({ data, setData }: Props) {
       setPayType("Tiền mặt");
     }
     if(data.length!=0){
+      setOpenPayType(false)
     setLoading(true)
     const cookies = await getCookies("refreshToken");
     const token = cookies?.value;
@@ -165,8 +186,12 @@ export default function BillTable({ data, setData }: Props) {
       if (!response.ok) {
         throw new Error(data.message);
       } else {
+        if(tableOrder){
+          await handleUpdateTableStatus(tableOrder, "Booked");
+        }
         setIdBill(data.data.billId);
         setOpenBill(true);
+        setFinishedBill(true);
       }
     } catch (e) {
       toast.error("Failed to add customer: " + e);
@@ -368,7 +393,7 @@ export default function BillTable({ data, setData }: Props) {
           )}
         </div>
       </div>
-      <ScrollArea className="mt-4 h-[460px] rounded-md border-2 border-gray-400 pb-1">
+      <ScrollArea className="mt-4 h-[420px] rounded-md border-2 border-gray-400 pb-1">
         <div className="h-full">
           <Table>
             <TableHeader>
@@ -473,7 +498,47 @@ export default function BillTable({ data, setData }: Props) {
         >
           Kết thúc
         </Button>
+        {/* <Button
+          onClick={() => addBill(1)}
+          className="bg-blue-400 transition duration-150 ease-in-out hover:bg-blue-300 active:scale-95 active:shadow-lg"
+        >
+          {loading?
+            <Loading
+             type="spin"
+             color="white"
+             height={20}
+             width={20}
+             className="mx-3"
+           />:
+          "Thanh toán"}
+        </Button> */}
         <Button
+          onClick={() => {if(data.length!=0){setOpenPayType(true)}}}
+          className="bg-green-500 transition duration-150 ease-in-out hover:bg-green-400 active:scale-95 active:shadow-lg"
+        >
+          {loading ? (
+            <Loading
+              type="spin"
+              color="white"
+              height={20}
+              width={20}
+              className="mx-3"
+            />
+          ) : (
+            "Thanh toán"
+          )}
+        </Button>
+      </div>
+      {/* dialog pay type */}
+      <Dialog open={openPayType} onOpenChange={setOpenPayType}>
+        <DialogContent className="sm:max-w-[400px]">
+          <p className="h-auto overflow-visible text-center text-xl font-semibold">
+            Chọn phương thức thanh toán
+          </p>
+          <DialogFooter >
+            <div className="flex justify-center gap-4 w-full mt-1">
+
+              <Button
           onClick={() => addBill(1)}
           className="bg-blue-400 transition duration-150 ease-in-out hover:bg-blue-300 active:scale-95 active:shadow-lg"
         >
@@ -487,27 +552,32 @@ export default function BillTable({ data, setData }: Props) {
            />:
           "Chuyển khoản"}
         </Button>
-        <Button
-          onClick={() => addBill(2)}
-          className="bg-green-500 transition duration-150 ease-in-out hover:bg-green-400 active:scale-95 active:shadow-lg"
-        >
-          {loading?
-            <Loading
-             type="spin"
-             color="white"
-             height={20}
-             width={20}
-             className="mx-3"
-           />:
-          "Tiền mặt"}
-        </Button>      
-      </div>
-      
-        <Dialog  open={openBill} onOpenChange={setOpenBill} >
-          <DialogContent className="px-3 sm:max-w-[470px]">
-            <div className="overflow-visible h-auto">
-              <ScrollArea className="h-[80vh]">
-                <div className=" px-3 overflow-visible dialog-content-to-pdf pb-2">
+            <Button
+              onClick={() => addBill(2)}
+              className="bg-green-500 transition duration-150 ease-in-out hover:bg-green-400 active:scale-95 active:shadow-lg"
+            >
+              {loading ? (
+                <Loading
+                  type="spin"
+                  color="white"
+                  height={20}
+                  width={20}
+                  className="mx-3"
+                />
+              ) : (
+                "Tiền mặt"
+              )}
+            </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* dialog bill */}
+      <Dialog open={openBill} onOpenChange={setOpenBill}>
+        <DialogContent className="px-3 sm:max-w-[470px]">
+          <div className="h-auto overflow-visible">
+            <ScrollArea className="h-[80vh]">
+              <div className="dialog-content-to-pdf overflow-visible px-3 pb-2">
                 <div>
                   <p className="font-petrona_bold text-5xl"> HiCoffee</p>
                   <p className="font-barlow_medium text-base text-[#B9BBBD]">
@@ -518,7 +588,9 @@ export default function BillTable({ data, setData }: Props) {
                   <p className="font-barlowCondensed_semibold text-4xl">
                     Hóa đơn
                   </p>
-                  <p className="font-barlow_medium text-base">Mã HĐ: {idBill}</p>
+                  <p className="font-barlow_medium text-base">
+                    Mã HĐ: {idBill}
+                  </p>
                 </div>
                 <div className="mb-2 mt-2 px-3">
                   <div className="flex justify-between font-roboto_regular text-base text-[#6A6A6A]">
@@ -607,7 +679,9 @@ export default function BillTable({ data, setData }: Props) {
                     </h2>
                   </div>
                   <div className="min-w-[100px]">
-                    <p className="text-end">{total.toLocaleString("vi-VN")} đ</p>
+                    <p className="text-end">
+                      {total.toLocaleString("vi-VN")} đ
+                    </p>
                     {customer?.customerType && (
                       <p className="text-end">
                         -{" "}
@@ -639,20 +713,14 @@ export default function BillTable({ data, setData }: Props) {
                 </div>
               </div>
             </ScrollArea>
-            </div>
-            <DialogFooter>
-              <Button 
-                className="mr-3"
-                onClick={handleGeneratePDF}
-                type="submit"
-              >
-                Print
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-       
-       
+          </div>
+          <DialogFooter>
+            <Button className="mr-3" onClick={handleGenerateImg} type="submit">
+              Print
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

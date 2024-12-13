@@ -128,3 +128,83 @@ export async function searchVoucherByCode(voucherCode:string): Promise<VoucherAp
         return null;
     }
 }
+export async function updateTableStatus(tableId:number,status:string): Promise<boolean> {
+  const cookies = await getCookies("refreshToken");
+  const token = cookies?.value;
+  const url = process.env.BASE_URL;
+  try {
+    const response = await fetch(`${url}/table/updatestatus/${tableId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: status,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      toast.error("Failed to update table status: " + data.message);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    toast.error("Failed to update table status: " + e);
+    return false;
+  }
+}
+export async function unBookedTable(
+  tableId: number,
+): Promise<boolean> {
+  const cookies = await getCookies("refreshToken");
+  const token = cookies?.value;
+  const url = process.env.BASE_URL;
+  try {
+    const response = await fetch(`${url}/table/endingTable/${tableId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      toast.error("Failed to unbooked table: " + data.message);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    toast.error("Failed to unbooked table: " + e);
+    return false;
+  }
+}
+export async function updateProductSoldOut(
+  productId: number,
+  isSoldOut: boolean,
+): Promise<boolean> {
+  const cookies = await getCookies("refreshToken");
+  const token = cookies?.value;
+  const url = process.env.BASE_URL;
+  try {
+    const response = await fetch(`${url}/product/updateSoldout/${productId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        isSoldOut: isSoldOut,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      toast.error("Failed to update product sold out: " + data.message);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    toast.error("Failed to update product sold out: " + e);
+    return false;
+  }
+}
