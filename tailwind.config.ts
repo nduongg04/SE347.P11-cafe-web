@@ -9,6 +9,13 @@ const config: Config = {
     ],
     theme: {
         extend: {
+            fontFamily: {
+                petrona_bold: ['Petrona-Bold', 'serif'],
+                barlow_medium: ['Barlow-Medium', 'serif'],
+                barlowCondensed_semibold: ['BarlowSemiCondensed-SemiBold', 'serif'],
+                roboto_regular: ['RobotoCondensed-Regular', 'serif'],
+                roboto_light: ['RobotoCondensed-Light', 'serif'],
+            },
             colors: {
                 "light-gray": "#B9BBBD",
                 "dark-green": {
@@ -67,5 +74,6 @@ const config: Config = {
         },
     },
     plugins: [require("tailwindcss-animate")],
+    
 };
 export default config;

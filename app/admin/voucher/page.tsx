@@ -207,7 +207,7 @@ export default function VoucherManagement() {
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 flex flex-col gap-5">
-        <h1 className="text-3xl font-bold">Voucher Management</h1>
+        <h1 className="text-3xl font-bold max-md:ml-4">Voucher Management</h1>
         <div className="flex items-center justify-end gap-2">
           <div className="relative flex-1 sm:w-auto">
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-gray-400" />

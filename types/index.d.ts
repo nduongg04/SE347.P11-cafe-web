@@ -39,3 +39,22 @@ declare type Dish = {
   isSoldOut: boolean;
   categoryName: string;
 };
+declare type Table = {
+  tableID: number;
+  tableNumber: number;
+  tableTypeID: number;
+  tableType: TableType;
+  floorId: number;
+  floor: Floor;
+  billId: number;
+  status: string;
+}
+declare type Floor = {
+  floorID: number;
+  floorNumber: number;
+  tables: Table[] ;
+}
+declare type TableType = {
+  tableTypeID: number;
+  tableNameType: string;
+}
