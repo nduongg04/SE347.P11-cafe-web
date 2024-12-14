@@ -41,8 +41,8 @@ const BillDialog = ({bill, onUpdate} : {bill:Bill, onUpdate: (status: "Pending"|
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({status: currentStatus })
-        });
-
+        }); 
+        console.log("Update bill res: ", response);
         if (!response.ok) {
           toast.error('Failed to update status');
         }
