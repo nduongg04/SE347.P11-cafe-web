@@ -29,6 +29,9 @@ export default function TopDishes({ data }: TopDishesProps) {
     );
   }
 
+  // Only show top 5 dishes
+  const topFiveDishes = data.slice(0, 5);
+
   return (
     <Card>
       <CardHeader>
@@ -36,8 +39,8 @@ export default function TopDishes({ data }: TopDishesProps) {
         <CardDescription>Most ordered products for the selected period</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {data.map((item) => (
+        <div className="grid grid-cols-5 gap-4">
+          {topFiveDishes.map((item) => (
             <Card key={item.product.productID}>
               <CardContent className="flex flex-col items-center p-4">
                 <Image
@@ -47,7 +50,7 @@ export default function TopDishes({ data }: TopDishesProps) {
                   height={100}
                   className="mb-2 rounded-full"
                 />
-                <h3 className="text-lg font-semibold">{item.product.productName}</h3>
+                <h3 className="text-lg font-semibold text-center">{item.product.productName}</h3>
                 <p className="text-sm text-gray-500">{item.product.categoryName}</p>
                 <p className="mt-2 text-xl font-bold text-[#00B074]">
                   ${item.product.price.toLocaleString('en-US', { maximumFractionDigits: 0 })}

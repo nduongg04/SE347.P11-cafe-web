@@ -86,7 +86,7 @@ export default function OrderPage({}: Props) {
   }
   return (
     //
-    <Tabs defaultValue="Dine-in" className="mx-2 mt-2">
+    <Tabs defaultValue="Dine-in" className="mx-2 mt-3">
       <div className="relative flex items-center justify-between">
         <TabsList className="grid w-[30%] grid-cols-2">
           <TabsTrigger

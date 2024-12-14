@@ -26,7 +26,7 @@ interface NavBarProps {
   onClose: () => void;
 }
 
-const NavBar = ({ isOpen, onClose }: NavBarProps) => {
+const Navbar = ({ isOpen, onClose }: NavBarProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const routes: {
@@ -35,50 +35,20 @@ const NavBar = ({ isOpen, onClose }: NavBarProps) => {
     icon: IconNameType;
   }[] = [
     {
-      label: "Dashboard",
-      href: "/admin",
-      icon: "dashboard",
-    },
-    {
-      label: "Menu",
-      href: "/admin/menu",
-      icon: "menu",
-    },
-    {
-      label: "Table",
-      href: "/admin/table",
-      icon: "table",
-    },
-    {
-      label: "Voucher",
-      href: "/admin/voucher",
-      icon: "voucher",
-    },
-    {
-      label: "Customer",
-      href: "/admin/customer",
-      icon: "customer",
-    },
-    {
       label: "Order",
-      href: "/admin/order",
+      href: "/employee",
       icon: "order",
     },
     {
-      label: "Employee",
-      href: "/admin/employee",
-      icon: "employee",
+      label: "Customer",
+      href: "/employee/customer",
+      icon: "customer",
     },
     {
       label: "Bill",
-      href: "/admin/bill",
+      href: "/employee/bill",
       icon: "bill",
     },
-    {
-      label: "Analytics",
-      href: "/admin/analytics",
-      icon: "analytics",
-    }, 
   ];
 
   const getIconComponent = (iconName: IconNameType, className?: string) => {
@@ -92,7 +62,7 @@ const NavBar = ({ isOpen, onClose }: NavBarProps) => {
   return (
     <div
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex w-64 flex-col gap-10 bg-white transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
+        "fixed inset-y-0 left-0 z-50 flex w-64 flex-col gap-10 bg-white transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:shadow",
         isOpen ? "translate-x-0" : "-translate-x-full",
       )}
     >
@@ -162,4 +132,4 @@ const NavBar = ({ isOpen, onClose }: NavBarProps) => {
   );
 };
 
-export default NavBar;
+export default Navbar;

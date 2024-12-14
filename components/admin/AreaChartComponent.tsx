@@ -53,17 +53,22 @@ export function AreaChartComponent({ data, className, startDate, endDate }: Area
         <CardDescription>Daily revenue for the selected period</CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={400}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="dateTime" 
               tickFormatter={formatXAxis}
               type="category"
-              domain={['dataMin', 'dataMax']}
+              interval={Math.ceil(data.length / 15)}
+              tick={{ fontSize: 14 }}
+              height={60}
+              tickMargin={20}
+              angle={-30}
             />
             <YAxis 
               tickFormatter={(value) => `$${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+              tick={{ fontSize: 14 }}
             />
             <Tooltip content={({ active, payload }) => {
               if (active && payload && payload.length) {
@@ -79,7 +84,14 @@ export function AreaChartComponent({ data, className, startDate, endDate }: Area
             }}
             />
             <Legend />
-            <Line type="monotone" dataKey="revenue" stroke="#00B074" strokeWidth={2} dot={{ r: 4 }} />
+            <Line 
+              type="monotone" 
+              dataKey="revenue" 
+              stroke="#00B074" 
+              strokeWidth={2} 
+              dot={{ r: 3 }}
+              activeDot={{ r: 6 }}
+            />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>
