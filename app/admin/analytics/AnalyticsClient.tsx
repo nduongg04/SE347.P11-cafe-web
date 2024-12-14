@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { DateRange } from "react-day-picker";
-import { formatDate } from "date-fns";
+import { format, addDays, differenceInDays } from "date-fns";
 import Image from "next/image";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -11,6 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import { authenticatedFetch } from "@/lib/auth";
 
 import Badge from "@/components/admin/Badge";
@@ -23,7 +24,7 @@ import { getProductReport, getReportBill, getRevenue } from "@/lib/actions/analy
 
 export default function AnalyticsClient() {
   const [selectedDate, setSelectedDate] = useState<DateRange | undefined>({
-    from: new Date(new Date().setDate(new Date().getDate() - 7)),
+    from: addDays(new Date(), -7),
     to: new Date(),
   });
   const [analyticsData, setAnalyticsData] = useState({
@@ -39,8 +40,8 @@ export default function AnalyticsClient() {
       if (!initialFetchDone.current) {
         setIsLoading(true);
         try {
-          const startDate = selectedDate?.from?.toISOString() || new Date(new Date().setDate(new Date().getDate() - 7)).toISOString();
-          const endDate = selectedDate?.to?.toISOString() || new Date().toISOString();
+          const startDate = selectedDate?.from ? format(selectedDate.from, "dd/MM/yyyy") : format(addDays(new Date(), -7), "dd/MM/yyyy");
+          const endDate = selectedDate?.to ? format(selectedDate.to, "dd/MM/yyyy") : format(new Date(), "dd/MM/yyyy");
 
           const [newRevenueData, newProductReport, newBillReport] = await Promise.all([
             getRevenue(startDate, endDate),
@@ -56,7 +57,6 @@ export default function AnalyticsClient() {
           initialFetchDone.current = true;
         } catch (error) {
           console.error("Error fetching data:", error);
-          // Reset loading state even if there's an error
           setAnalyticsData({
             revenueData: { totalValue: 0, reportRecordRevenues: [] },
             productReportData: [],
@@ -76,8 +76,8 @@ export default function AnalyticsClient() {
       setIsLoading(true);
       const fetchData = async () => {
         try {
-          const startDate = selectedDate?.from?.toISOString() || new Date(new Date().setDate(new Date().getDate() - 7)).toISOString();
-          const endDate = selectedDate?.to?.toISOString() || new Date().toISOString();
+          const startDate = selectedDate?.from ? format(selectedDate.from, "dd/MM/yyyy") : format(addDays(new Date(), -7), "dd/MM/yyyy");
+          const endDate = selectedDate?.to ? format(selectedDate.to, "dd/MM/yyyy") : format(new Date(), "dd/MM/yyyy");
 
           const [newRevenueData, newProductReport, newBillReport] = await Promise.all([
             getRevenue(startDate, endDate),
@@ -101,6 +101,21 @@ export default function AnalyticsClient() {
     }
   }, [selectedDate]);
 
+  const handleDateSelect = (newDate: DateRange | undefined) => {
+    if (newDate?.from && newDate?.to) {
+      const daysDiff = differenceInDays(newDate.to, newDate.from);
+      if (daysDiff > 30) {
+        toast({
+          title: "Date Range Too Long",
+          description: "Please select a period of 30 days or less",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    setSelectedDate(newDate);
+  };
+
   const badgeInfos = [
     {
       iconHref: "/assets/icons/orders.svg",
@@ -114,43 +129,46 @@ export default function AnalyticsClient() {
     },
   ];
 
-  const exportToExcel = async () => {
-    try {
-      const response = await authenticatedFetch('/api/export-analytics', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...analyticsData,
-          startDate: selectedDate?.from?.toISOString(),
-          endDate: selectedDate?.to?.toISOString(),
-        }),
-      });
+  // const exportToExcel = async () => {
+  //   try {
+  //     const startDate = selectedDate?.from ? format(selectedDate.from, "dd/MM/yyyy") : format(addDays(new Date(), -7), "dd/MM/yyyy");
+  //     const endDate = selectedDate?.to ? format(selectedDate.to, "dd/MM/yyyy") : format(new Date(), "dd/MM/yyyy");
 
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = 'analytics_report.xlsx';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-      } else {
-        console.error('Failed to export Excel file');
-      }
-    } catch (error) {
-      console.error('Error exporting to Excel:', error);
-    }
-  };
+  //     const response = await authenticatedFetch('/api/export-analytics', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         ...analyticsData,
+  //         startDate,
+  //         endDate,
+  //       }),
+  //     });
+
+  //     if (response.ok) {
+  //       const blob = await response.blob();
+  //       const url = window.URL.createObjectURL(blob);
+  //       const a = document.createElement('a');
+  //       a.style.display = 'none';
+  //       a.href = url;
+  //       a.download = 'analytics_report.xlsx';
+  //       document.body.appendChild(a);
+  //       a.click();
+  //       window.URL.revokeObjectURL(url);
+  //     } else {
+  //       console.error('Failed to export Excel file');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error exporting to Excel:', error);
+  //   }
+  // };
 
   return (
-    <div className="font-barlow flex flex-1 flex-col gap-10">
+    <div className="font-barlow flex flex-1 flex-col gap-10 py-4">
       <div className="flex items-center justify-between gap-10">
         <div className="flex flex-1 flex-wrap items-center justify-between gap-10">
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 max-md:ml-16">
             <h1 className="text-xl font-semibold">Analytics</h1>
             <p className="text-sm text-gray-500">
               Let's see analytics of the coffee shop
@@ -173,12 +191,12 @@ export default function AnalyticsClient() {
                       Filter Period
                     </span>
                     <span className="font text-xs">
-                      {formatDate(
+                      {format(
                         selectedDate?.from || new Date(),
                         "dd MMM yyyy",
                       )}{" "}
                       -{" "}
-                      {formatDate(selectedDate?.to || new Date(), "dd MMM yyyy")}
+                      {format(selectedDate?.to || new Date(), "dd MMM yyyy")}
                     </span>
                   </div>
                   <Image
@@ -195,12 +213,15 @@ export default function AnalyticsClient() {
                   mode="range"
                   defaultMonth={selectedDate?.from}
                   selected={selectedDate}
-                  onSelect={setSelectedDate}
+                  onSelect={handleDateSelect}
                   numberOfMonths={2}
+                  disabled={(date) =>
+                    selectedDate?.from && differenceInDays(date, selectedDate.from) > 30 ? true : false
+                  }
                 />
               </PopoverContent>
             </Popover>
-            <Button onClick={exportToExcel}>Export to Excel</Button>
+            {/* <Button onClick={exportToExcel}>Export to Excel</Button> */}
           </div>
         </div>
       </div>
@@ -218,7 +239,7 @@ export default function AnalyticsClient() {
               />
             ))}
           </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-y-6 md:gap-x-6 md:grid-cols-3">
             <PieChartComponent className="col-span-1" data={analyticsData.billReportData} />
             <AreaChartComponent
               className="col-span-2"
