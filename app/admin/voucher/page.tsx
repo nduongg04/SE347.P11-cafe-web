@@ -36,14 +36,13 @@ import {
   getAllVouchers,
   updateVoucher,
 } from "@/lib/actions/voucher.action";
-import { authenticatedFetch } from "@/lib/auth";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 import { Pencil, Plus, Search, TriangleAlert, X } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
-import Loader from "@/components/admin/Loader";
+import LoadingSpinner from "@/components/admin/LoadingSpinner";
 
 function adjustToLocalDate(date: Date): Date {
   const localDate = new Date(date);
@@ -208,7 +207,7 @@ export default function VoucherManagement() {
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 flex flex-col gap-5">
-        <h1 className="text-3xl font-bold">Voucher Management</h1>
+        <h1 className="text-3xl font-bold max-md:ml-4">Voucher Management</h1>
         <div className="flex items-center justify-end gap-2">
           <div className="relative flex-1 sm:w-auto">
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
@@ -287,7 +286,7 @@ export default function VoucherManagement() {
         </div>
       </div>
       {isLoadingVouchers ? (
-        <Loader />
+        <LoadingSpinner />
       ) : (
         <Table className="rounded-lg bg-white">
           <TableHeader className="">
