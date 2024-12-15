@@ -9,7 +9,7 @@ const Home = () => {
   const [progress, setProgress] = useState(0);
   useEffect(() => {
     const handleCookie = async () => {
-			const userCookie = await getCookies("user");
+      const userCookie = await getCookies("user");
       const userString = userCookie?.value;
       setProgress(50);
       if (userString) {
