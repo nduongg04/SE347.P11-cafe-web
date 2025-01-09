@@ -106,7 +106,7 @@ export default function BillTable({ data, setData, tableOrder,updateStatus,reset
     }
     if (voucher) {
       if (voucher.voucherType.voucherTypeID == 1) {
-        totalBill = totalBill - (totalBill * voucher.voucherValue) / 100;
+        totalBill = totalBill - (total * voucher.voucherValue) / 100;
       } else if (voucher.voucherType.voucherTypeID == 2) {
         totalBill = totalBill - voucher.voucherValue;
       }
