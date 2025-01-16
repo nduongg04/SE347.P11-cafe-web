@@ -358,7 +358,7 @@ export default function Table() {
           onOpenChange={setIsAddFloorDialogOpen}
           >
           <DialogTrigger asChild>
-              <Button className="bg-[#00B074] text-white hover:bg-[#00956A] mr-4 mb-2">
+              <Button className="bg-[#00B074] text-white hover:bg-[#00956A] mr-4 mb-2 min-[416px]:mb-0">
               <Plus className="mr-2 h-4 w-4" />
               Add New Floor
               </Button>
@@ -381,7 +381,7 @@ export default function Table() {
           onOpenChange={setIsAddTableDialogOpen}
       >
           <DialogTrigger asChild>
-              <Button className="bg-[#00B074] text-white hover:bg-[#00956A] mb-2">
+              <Button className="bg-[#00B074] text-white hover:bg-[#00956A]">
               <Plus className="mr-2 h-4 w-4" />
               Add New Table
               </Button>
